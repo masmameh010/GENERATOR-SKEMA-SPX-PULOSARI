@@ -1,506 +1,510 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ClipboardCopy, MessageCircle, ChevronDown, ChevronUp, RefreshCw, CheckSquare, Clock, Calendar } from 'lucide-react';
-
-// --- DATA INITIALIZATION ---
-const DATA_AREAS = [
-  { id: 'A', name: 'Desa Pulosari', subs: [
-    { id: 'A1', name: 'Dukuh Karangpoh' }, { id: 'A2', name: 'Dukuh Desa' },
-    { id: 'A3', name: 'Dukuh Tumbu' }, { id: 'A4', name: 'Dukuh Gunung' }
-  ]},
-  { id: 'B', name: 'Desa Penakir', subs: [
-    { id: 'B1', name: 'Dukuh Krajan' }, { id: 'B2', name: 'Dukuh Sigeblog' },
-    { id: 'B3', name: 'Dukuh Sawangan' }, { id: 'B4', name: 'Dukuh Sarangan' }, { id: 'B5', name: 'Dukuh Wanasari' }
-  ]},
-  { id: 'C', name: 'Desa Nyalembeng', subs: [
-    { id: 'C1', name: 'Rw 1' }, { id: 'C2', name: 'Rw 2' }, { id: 'C3', name: 'Rw 3' }
-  ]},
-  { id: 'D', name: 'Desa Karangsari', subs: [
-    { id: 'D1', name: 'Nusa Rw 2 (RT 11-17)' }, { id: 'D2', name: 'Pesuruan Rw 4 (RT 24-28)' },
-    { id: 'D3', name: 'Krajan Rw 1 (RT 1-10, 29)' }, { id: 'D4', name: 'Karangsari Barat Rw 3 (RT 18-22)' },
-    { id: 'D5', name: 'Dukuh Waryan Rw 3 (RT 23, 30)' }
-  ]},
-  { id: 'E', name: 'Desa Gunungsari', subs: [
-    { id: 'E1', name: 'Dukuh Krajan Rw 1' }, { id: 'E2', name: 'Dukuh Sipendil Rw 3' },
-    { id: 'E3', name: 'Dukuh Silegok Rw 4' }, { id: 'E4', name: 'Dukuh Sibedil Rw 2' }
-  ]},
-  { id: 'F', name: 'Desa Gambuhan', subs: [
-    { id: 'F1', name: 'Gambuhan Rw 1' }, { id: 'F2', name: 'Gambuhan Rw 2' },
-    { id: 'F3', name: 'Gambuhan Rw 3' }, { id: 'F4', name: 'Gambuhan Rw 4' }
-  ]},
-  { id: 'G', name: 'Desa Jurangmangu', subs: [
-    { id: 'G1', name: 'RT 1, 2, 3, 4 RW 1' }, { id: 'G2', name: 'RT 5, 6, 7 RW 2' }
-  ]}
-];
-
-const DATA_COURIERS = [
-  { name: 'Deni', type: 'Dedicated' }, { name: 'Lutfi', type: 'Dedicated' },
-  { name: 'Syarif Hidayatulloh', type: 'Dedicated' }, { name: 'Singgih', type: 'Dedicated' },
-  { name: 'Hengki', type: 'Dedicated' }, { name: 'Rocky', type: 'Mitra +' },
-  { name: 'Slamet', type: 'Mitra' }, { name: 'Aditya', type: 'Mitra' },
-  { name: 'Aminullah', type: 'Mitra' }, { name: 'Ichsan', type: 'Mitra' },
-  { name: 'Leman', type: 'Mitra' }, { name: 'Amin Jaya', type: 'Mitra' },
-  { name: 'Muzaki', type: 'Mitra' }
-];
-
-const TRIP_OPTIONS = [
-  { id: 'Pagi', label: 'Trip Pagi' },
-  { id: 'Siang', label: 'Trip Siang (12:00)' },
-  { id: 'Sore', label: 'Trip Sore (14:00)' }
-];
-
-export default function App() {
-  // State: Tanggal Skema (Default: Hari ini)
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().split('T')[0];
-  });
-
-  // State: Status Kurir (OFF/LIBUR/CUTI)
-  const [courierStatuses, setCourierStatuses] = useState({});
-
-  // State: object matching { tripId: { subAreaId: courierName } }
-  const [activeTrip, setActiveTrip] = useState('Pagi');
-  const [allAssignments, setAllAssignments] = useState({
-    Pagi: {}, Siang: {}, Sore: {}
-  });
-  
-  const [expandedCourier, setExpandedCourier] = useState(null);
-  
-  const [customNote, setCustomNote] = useState('');
-  const [waText, setWaText] = useState('');
-  const [copied, setCopied] = useState(false);
-  const textRef = useRef(null);
-
-  const assignments = allAssignments[activeTrip];
-
-  // --- LOGIC: ASSIGNMENT & STATUS ---
-  const handleStatusChange = (courierName, status) => {
-    // Jika kurir libur, otomatis kosongkan seluruh tugasnya di semua trip
-    if (status !== 'HADIR') {
-      setAllAssignments(prevAll => {
-        const newAll = { ...prevAll };
-        ['Pagi', 'Siang', 'Sore'].forEach(trip => {
-          newAll[trip] = { ...newAll[trip] };
-          Object.keys(newAll[trip]).forEach(subId => {
-            if (newAll[trip][subId] === courierName) {
-              delete newAll[trip][subId];
-            }
-          });
-        });
-        return newAll;
-      });
-      if (expandedCourier === courierName) setExpandedCourier(null);
-    }
-
-    setCourierStatuses(prev => {
-      const next = { ...prev };
-      if (status === 'HADIR') {
-        delete next[courierName];
-      } else {
-        next[courierName] = status;
-      }
-      return next;
-    });
-  };
-
-  const handleToggleSubArea = (subId, courierName) => {
-    setAllAssignments(prevAll => {
-      const currentTripAssign = { ...prevAll[activeTrip] };
-      if (currentTripAssign[subId] === courierName) {
-        delete currentTripAssign[subId];
-      } else {
-        currentTripAssign[subId] = courierName;
-      }
-      return { ...prevAll, [activeTrip]: currentTripAssign };
-    });
-  };
-
-  const handleToggleVillage = (village, courierName) => {
-    const isAllMine = village.subs.every(sub => assignments[sub.id] === courierName);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPX Pulosari Team - Generator Skema</title>
     
-    setAllAssignments(prevAll => {
-      const currentTripAssign = { ...prevAll[activeTrip] };
-      village.subs.forEach(sub => {
-        if (isAllMine) {
-          if (currentTripAssign[sub.id] === courierName) delete currentTripAssign[sub.id];
-        } else {
-          currentTripAssign[sub.id] = courierName;
-        }
-      });
-      return { ...prevAll, [activeTrip]: currentTripAssign };
-    });
-  };
-
-  const resetSchema = () => {
-    if(window.confirm(`Yakin ingin mereset/mengosongkan skema untuk ${TRIP_OPTIONS.find(t => t.id === activeTrip)?.label}?`)) {
-      setAllAssignments(prev => ({ ...prev, [activeTrip]: {} }));
-      setExpandedCourier(null);
-    }
-  };
-
-  // --- LOGIC: GENERATE WA TEXT ---
-  useEffect(() => {
-    generateWaText();
-  }, [allAssignments, customNote, selectedDate, courierStatuses]);
-
-  const getTripText = (assignmentsObj, tripType) => {
-    let text = '';
-    const courierTasks = {};
-    DATA_COURIERS.forEach(c => courierTasks[c.name] = { type: c.type, areas: [] });
-
-    let hasAnyTask = false;
-    Object.entries(assignmentsObj).forEach(([subId, courierName]) => {
-      if (courierStatuses[courierName]) return; // Lewati jika status kurir tidak HADIR
-
-      let fullName = '';
-      DATA_AREAS.forEach(area => {
-        const sub = area.subs.find(s => s.id === subId);
-        if (sub) fullName = `${area.name} - ${sub.name}`;
-      });
-      if (courierTasks[courierName]) {
-        courierTasks[courierName].areas.push(`${subId} (${fullName})`);
-        hasAnyTask = true;
-      }
-    });
-
-    if (!hasAnyTask && tripType !== 'Pagi') return '';
-
-    const types = ['Dedicated', 'Mitra +', 'Mitra'];
-    types.forEach(type => {
-      let typeHasTask = false;
-      let typeStr = `*👨‍✈️ TIM ${type.toUpperCase()}:*\n`;
-      DATA_COURIERS.filter(c => c.type === type).forEach(c => {
-        if (courierStatuses[c.name]) return; // Skip dari daftar pembawa jika OFF/CUTI
-        
-        if (courierTasks[c.name].areas.length > 0) {
-          const sortedAreas = courierTasks[c.name].areas.sort();
-          typeStr += `▪️ *${c.name}* : ${sortedAreas.join(', ')}\n`;
-          typeHasTask = true;
-        }
-      });
-
-      if (tripType === 'Pagi') {
-        text += typeStr;
-        if (!typeHasTask) text += `(Belum ada penugasan)\n`;
-        text += `\n`;
-      } else {
-        if (typeHasTask) {
-          text += typeStr + `\n`;
-        }
-      }
-    });
-
-    if (tripType === 'Pagi') {
-      text += `*Area Belum Tercover:* `;
-      const unassigned = [];
-      DATA_AREAS.forEach(area => {
-        area.subs.forEach(sub => {
-          const assignee = assignmentsObj[sub.id];
-          const isCovered = assignee && !courierStatuses[assignee];
-          if (!isCovered) {
-             unassigned.push(`${sub.id} (${area.name} - ${sub.name})`);
-          }
-        });
-      });
-      text += unassigned.length > 0 ? unassigned.join(', ') : 'NIHIL';
-    }
-
-    return text.trim();
-  };
-
-  const generateWaText = () => {
-    // Format Tanggal
-    const [y, m, d] = selectedDate.split('-');
-    const dateObj = new Date(y, m - 1, d);
-    const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    <!-- Load Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    let finalWa = `📦 *SKEMA SPX PULOSARI*\n📅 ${formattedDate}\n\n`;
+    <!-- Load React, ReactDOM, dan Babel (Agar bisa menjalankan React di dalam HTML) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    // 1. Trip Pagi (Base)
-    finalWa += getTripText(allAssignments.Pagi, 'Pagi');
-
-    // 2. Trip Siang
-    const textSiang = getTripText(allAssignments.Siang, 'Siang');
-    if (textSiang) finalWa += `\n\n*☀️ TRIP SIANG (12:00)*\n${textSiang}`;
-
-    // 3. Trip Sore
-    const textSore = getTripText(allAssignments.Sore, 'Sore');
-    if (textSore) finalWa += `\n\n*🌥️ TRIP SORE (14:00)*\n${textSore}`;
-
-    // 4. Info Kurir Absen
-    const absentNames = Object.keys(courierStatuses);
-    if (absentNames.length > 0) {
-      finalWa += `\n\n*🌴 INFO KURIR ABSEN:*\n`;
-      absentNames.forEach(name => {
-         finalWa += `▪️ ${name} : ${courierStatuses[name]}\n`;
-      });
-      finalWa = finalWa.trimEnd();
-    }
-
-    // 5. Custom Note
-    if (customNote.trim()) {
-      finalWa += `\n\n*📌 NOTE:*\n${customNote.trim()}`;
-    }
-
-    finalWa += `\n\n_Semangat pejuang paket! Utamakan keselamatan & SLA._ 🚀`;
-
-    setWaText(finalWa);
-  };
-
-  const copyToClipboard = () => {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(waText).then(() => {
-        setCopied(true); setTimeout(() => setCopied(false), 2000);
-      });
-    } else {
-      if (textRef.current) {
-        textRef.current.select();
-        document.execCommand('copy');
-        setCopied(true); setTimeout(() => setCopied(false), 2000);
-      }
-    }
-  };
-
-
-  // --- UI RENDERERS ---
-  return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-20">
-      {/* Header */}
-      <header className="bg-[#EE4D2D] text-white p-4 shadow-md sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold tracking-wider flex items-center gap-2">
-              <CheckSquare size={20} /> SPX PULOSARI
-            </h1>
-            <p className="text-xs opacity-90 mt-0.5">Generator Skema Area</p>
-          </div>
-          <button 
-            onClick={resetSchema}
-            className="flex items-center gap-1.5 text-xs bg-white text-[#EE4D2D] px-3 py-1.5 rounded-full font-bold hover:bg-gray-100 transition shadow-sm"
-          >
-            <RefreshCw size={14} /> Reset {activeTrip}
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-4 mt-2">
-        
-        {/* TOP CONTROLS: TANGGAL & TRIP */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          {/* TANGGAL SELECTOR */}
-          <div className="bg-white p-2 md:p-1.5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2 px-4 w-full md:w-auto shrink-0">
-             <Calendar size={18} className="text-[#EE4D2D]" />
-             <input 
-                type="date" 
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="font-bold text-gray-700 outline-none w-full bg-transparent text-sm cursor-pointer"
-             />
-          </div>
-
-          {/* TAB TRIP SELECTOR */}
-          <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 flex gap-1 overflow-x-auto flex-1">
-            {TRIP_OPTIONS.map(trip => {
-              const hasData = Object.keys(allAssignments[trip.id]).length > 0;
-              const isActive = activeTrip === trip.id;
-              return (
-                <button
-                  key={trip.id}
-                  onClick={() => setActiveTrip(trip.id)}
-                  className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all relative whitespace-nowrap
-                    ${isActive ? 'bg-[#EE4D2D] text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
-                >
-                  <Clock size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
-                  {trip.label}
-                  {hasData && !isActive && (
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full shadow-sm"></span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Left: Input Assignment (Kurir List) */}
-          <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 h-fit">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">1. Pilih Kurir & Centang Area</h2>
-            
-            <div className="space-y-3">
-              {DATA_COURIERS.map((courier, index) => {
-                const isExpanded = expandedCourier === courier.name;
-                const courierStatus = courierStatuses[courier.name];
-                const isAbsent = !!courierStatus;
-                
-                // Menghitung jumlah area yang tercentang untuk kurir ini di trip aktif
-                const myAreasCount = Object.values(assignments).filter(name => name === courier.name).length;
-                
-                return (
-                  <div key={index} className={`bg-white rounded-lg border overflow-hidden shadow-sm transition-all 
-                    ${isAbsent ? 'border-red-200 opacity-80' : 'border-gray-200'}`}>
-                    
-                    {/* Header Akordion Kurir */}
-                    <div 
-                      className={`p-3 md:p-4 flex justify-between items-center cursor-pointer select-none transition-colors
-                        ${isExpanded ? 'bg-[#EE4D2D]/10' : (isAbsent ? 'bg-red-50/30' : 'hover:bg-gray-50')}`}
-                      onClick={() => setExpandedCourier(isExpanded ? null : courier.name)}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-bold text-gray-800 text-sm md:text-base">{courier.name}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] md:text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
-                            {courier.type}
-                          </span>
-                          {!isAbsent && myAreasCount > 0 && (
-                            <span className="text-[10px] md:text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">
-                              {myAreasCount} Area Terpilih
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <select 
-                          value={courierStatus || 'HADIR'}
-                          onChange={(e) => handleStatusChange(courier.name, e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          className={`text-[10px] md:text-xs font-bold rounded px-1.5 py-1 outline-none border cursor-pointer
-                            ${isAbsent ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
-                        >
-                          <option value="HADIR">HADIR</option>
-                          <option value="OFF">OFF</option>
-                          <option value="LIBUR">LIBUR</option>
-                          <option value="CUTI">CUTI</option>
-                        </select>
-                        <div className="text-gray-400">
-                          {isExpanded ? <ChevronUp size={20} className="text-[#EE4D2D]" /> : <ChevronDown size={20} />}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Body Akordion: List Area dengan Checkbox */}
-                    {isExpanded && (
-                      <div className="p-3 md:p-4 bg-gray-50 border-t border-gray-100 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        {isAbsent ? (
-                          <div className="text-center py-5">
-                            <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold mb-2">
-                              STATUS: {courierStatus}
-                            </span>
-                            <p className="text-sm text-gray-500">
-                              Ubah status menjadi <b>HADIR</b> terlebih dahulu untuk dapat memberikan penugasan area kepada kurir ini.
-                            </p>
-                          </div>
-                        ) : (
-                          DATA_AREAS.map(village => {
-                            const isAllMine = village.subs.every(sub => assignments[sub.id] === courier.name);
-                            const isSomeMine = !isAllMine && village.subs.some(sub => assignments[sub.id] === courier.name);
-
-                            return (
-                              <div key={village.id} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                                {/* Header Desa / Tombol "All Area" */}
-                                <label className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-100 cursor-pointer select-none">
-                                  <input 
-                                    type="checkbox" 
-                                    className="w-4 h-4 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
-                                    checked={isAllMine}
-                                    ref={input => { if (input) input.indeterminate = isSomeMine }}
-                                    onChange={() => handleToggleVillage(village, courier.name)}
-                                  />
-                                  <span className="font-bold text-[#EE4D2D] text-sm md:text-base">
-                                    {village.id} - {village.name} <span className="text-gray-400 text-xs font-normal ml-1">(Pilih Semua)</span>
-                                  </span>
-                                </label>
-
-                                {/* Daftar RW / Dukuh */}
-                                <div className="space-y-2 pl-7">
-                                  {village.subs.map(sub => {
-                                    const isMine = assignments[sub.id] === courier.name;
-                                    const currentAssignee = assignments[sub.id];
-                                    const isOther = currentAssignee && currentAssignee !== courier.name;
-
-                                    return (
-                                      <label key={sub.id} className="flex items-start md:items-center space-x-3 cursor-pointer select-none group">
-                                        <input 
-                                          type="checkbox" 
-                                          className="w-4 h-4 mt-0.5 md:mt-0 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
-                                          checked={isMine}
-                                          onChange={() => handleToggleSubArea(sub.id, courier.name)}
-                                        />
-                                        <div className="flex flex-col md:flex-row md:items-center text-sm">
-                                          <span className="text-gray-700 group-hover:text-black">
-                                            <span className="font-bold bg-gray-100 px-1.5 py-0.5 rounded text-xs mr-1.5 border border-gray-200">{sub.id}</span> 
-                                            {sub.name}
-                                          </span>
-                                          {isOther && (
-                                            <span className="md:ml-2 mt-1 md:mt-0 text-[10px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 w-fit">
-                                              Diambil: {currentAssignee}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </label>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            )
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Right: Output WA */}
-          <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[80vh] sticky top-20">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-              <MessageCircle size={20} className="text-green-500" /> 2. Hasil Skema (Copy WA)
-            </h2>
-
-            {/* Note Input */}
-            <div className="mb-3">
-              <label className="text-xs font-bold text-gray-700 mb-1 block">Catatan Tambahan (Opsional):</label>
-              <textarea 
-                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none custom-scrollbar"
-                rows="2"
-                placeholder="Ketik catatan, info libur, atau instruksi khusus di sini..."
-                value={customNote}
-                onChange={(e) => setCustomNote(e.target.value)}
-              ></textarea>
-            </div>
-
-            <textarea 
-              ref={textRef}
-              className="flex-1 w-full border border-gray-200 rounded-lg p-3 md:p-4 text-xs md:text-sm font-mono bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-400 whitespace-pre-wrap custom-scrollbar"
-              readOnly
-              value={waText}
-            />
-            <button 
-              onClick={copyToClipboard}
-              className={`mt-4 w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-sm
-                ${copied ? 'bg-green-500 text-white transform scale-[0.98]' : 'bg-[#EE4D2D] text-white hover:bg-[#d64325]'}`}
-            >
-              <ClipboardCopy size={20} />
-              {copied ? 'Berhasil Disalin!' : 'Copy Untuk WhatsApp'}
-            </button>
-          </div>
-
-        </div>
-      </main>
-
-      <style dangerouslySetInnerHTML={{__html: `
+    <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
         input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
-      `}} />
-    </div>
-  );
-}
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- KOMPONEN IKON (Pengganti Lucide agar jalan di HTML) ---
+        const CheckSquare = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>;
+        const RefreshCw = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
+        const Calendar = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+        const Clock = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;
+        const ChevronUp = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>;
+        const ChevronDown = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"></polyline></svg>;
+        const MessageCircle = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
+        const ClipboardCopy = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
+
+        // --- DATA INITIALIZATION ---
+        const DATA_AREAS = [
+          { id: 'A', name: 'Desa Pulosari', subs: [
+            { id: 'A1', name: 'Dukuh Karangpoh' }, { id: 'A2', name: 'Dukuh Desa' },
+            { id: 'A3', name: 'Dukuh Tumbu' }, { id: 'A4', name: 'Dukuh Gunung' }
+          ]},
+          { id: 'B', name: 'Desa Penakir', subs: [
+            { id: 'B1', name: 'Dukuh Krajan' }, { id: 'B2', name: 'Dukuh Sigeblog' },
+            { id: 'B3', name: 'Dukuh Sawangan' }, { id: 'B4', name: 'Dukuh Sarangan' }, { id: 'B5', name: 'Dukuh Wanasari' }
+          ]},
+          { id: 'C', name: 'Desa Nyalembeng', subs: [
+            { id: 'C1', name: 'Rw 1' }, { id: 'C2', name: 'Rw 2' }, { id: 'C3', name: 'Rw 3' }
+          ]},
+          { id: 'D', name: 'Desa Karangsari', subs: [
+            { id: 'D1', name: 'Nusa Rw 2 (RT 11-17)' }, { id: 'D2', name: 'Pesuruan Rw 4 (RT 24-28)' },
+            { id: 'D3', name: 'Krajan Rw 1 (RT 1-10, 29)' }, { id: 'D4', name: 'Karangsari Barat Rw 3 (RT 18-22)' },
+            { id: 'D5', name: 'Dukuh Waryan Rw 3 (RT 23, 30)' }
+          ]},
+          { id: 'E', name: 'Desa Gunungsari', subs: [
+            { id: 'E1', name: 'Dukuh Krajan Rw 1' }, { id: 'E2', name: 'Dukuh Sipendil Rw 3' },
+            { id: 'E3', name: 'Dukuh Silegok Rw 4' }, { id: 'E4', name: 'Dukuh Sibedil Rw 2' }
+          ]},
+          { id: 'F', name: 'Desa Gambuhan', subs: [
+            { id: 'F1', name: 'Gambuhan Rw 1' }, { id: 'F2', name: 'Gambuhan Rw 2' },
+            { id: 'F3', name: 'Gambuhan Rw 3' }, { id: 'F4', name: 'Gambuhan Rw 4' }
+          ]},
+          { id: 'G', name: 'Desa Jurangmangu', subs: [
+            { id: 'G1', name: 'RT 1, 2, 3, 4 RW 1' }, { id: 'G2', name: 'RT 5, 6, 7 RW 2' }
+          ]}
+        ];
+
+        const DATA_COURIERS = [
+          { name: 'Deni', type: 'Dedicated' }, { name: 'Lutfi', type: 'Dedicated' },
+          { name: 'Syarif Hidayatulloh', type: 'Dedicated' }, { name: 'Singgih', type: 'Dedicated' },
+          { name: 'Hengki', type: 'Dedicated' }, { name: 'Rocky', type: 'Mitra +' },
+          { name: 'Slamet', type: 'Mitra' }, { name: 'Aditya', type: 'Mitra' },
+          { name: 'Aminullah', type: 'Mitra' }, { name: 'Ichsan', type: 'Mitra' },
+          { name: 'Leman', type: 'Mitra' }, { name: 'Amin Jaya', type: 'Mitra' },
+          { name: 'Muzaki', type: 'Mitra' }
+        ];
+
+        const TRIP_OPTIONS = [
+          { id: 'Pagi', label: 'Trip Pagi' },
+          { id: 'Siang', label: 'Trip Siang (12:00)' },
+          { id: 'Sore', label: 'Trip Sore (14:00)' }
+        ];
+
+        function App() {
+          const [selectedDate, setSelectedDate] = useState(() => {
+            const d = new Date();
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            return d.toISOString().split('T')[0];
+          });
+
+          const [courierStatuses, setCourierStatuses] = useState({});
+          const [activeTrip, setActiveTrip] = useState('Pagi');
+          const [allAssignments, setAllAssignments] = useState({
+            Pagi: {}, Siang: {}, Sore: {}
+          });
+          
+          const [expandedCourier, setExpandedCourier] = useState(null);
+          const [customNote, setCustomNote] = useState('');
+          const [waText, setWaText] = useState('');
+          const [copied, setCopied] = useState(false);
+          const textRef = useRef(null);
+
+          const assignments = allAssignments[activeTrip];
+
+          const handleStatusChange = (courierName, status) => {
+            if (status !== 'HADIR') {
+              setAllAssignments(prevAll => {
+                const newAll = { ...prevAll };
+                ['Pagi', 'Siang', 'Sore'].forEach(trip => {
+                  newAll[trip] = { ...newAll[trip] };
+                  Object.keys(newAll[trip]).forEach(subId => {
+                    if (newAll[trip][subId] === courierName) {
+                      delete newAll[trip][subId];
+                    }
+                  });
+                });
+                return newAll;
+              });
+              if (expandedCourier === courierName) setExpandedCourier(null);
+            }
+
+            setCourierStatuses(prev => {
+              const next = { ...prev };
+              if (status === 'HADIR') {
+                delete next[courierName];
+              } else {
+                next[courierName] = status;
+              }
+              return next;
+            });
+          };
+
+          const handleToggleSubArea = (subId, courierName) => {
+            setAllAssignments(prevAll => {
+              const currentTripAssign = { ...prevAll[activeTrip] };
+              if (currentTripAssign[subId] === courierName) {
+                delete currentTripAssign[subId];
+              } else {
+                currentTripAssign[subId] = courierName;
+              }
+              return { ...prevAll, [activeTrip]: currentTripAssign };
+            });
+          };
+
+          const handleToggleVillage = (village, courierName) => {
+            const isAllMine = village.subs.every(sub => assignments[sub.id] === courierName);
+            
+            setAllAssignments(prevAll => {
+              const currentTripAssign = { ...prevAll[activeTrip] };
+              village.subs.forEach(sub => {
+                if (isAllMine) {
+                  if (currentTripAssign[sub.id] === courierName) delete currentTripAssign[sub.id];
+                } else {
+                  currentTripAssign[sub.id] = courierName;
+                }
+              });
+              return { ...prevAll, [activeTrip]: currentTripAssign };
+            });
+          };
+
+          const resetSchema = () => {
+            if(window.confirm(`Yakin ingin mereset/mengosongkan skema untuk ${TRIP_OPTIONS.find(t => t.id === activeTrip)?.label}?`)) {
+              setAllAssignments(prev => ({ ...prev, [activeTrip]: {} }));
+              setExpandedCourier(null);
+            }
+          };
+
+          useEffect(() => {
+            generateWaText();
+          }, [allAssignments, customNote, selectedDate, courierStatuses]);
+
+          const getTripText = (assignmentsObj, tripType) => {
+            let text = '';
+            const courierTasks = {};
+            DATA_COURIERS.forEach(c => courierTasks[c.name] = { type: c.type, areas: [] });
+
+            let hasAnyTask = false;
+            Object.entries(assignmentsObj).forEach(([subId, courierName]) => {
+              if (courierStatuses[courierName]) return; 
+
+              let fullName = '';
+              DATA_AREAS.forEach(area => {
+                const sub = area.subs.find(s => s.id === subId);
+                if (sub) fullName = `${area.name} - ${sub.name}`;
+              });
+              if (courierTasks[courierName]) {
+                courierTasks[courierName].areas.push(`${subId} (${fullName})`);
+                hasAnyTask = true;
+              }
+            });
+
+            if (!hasAnyTask && tripType !== 'Pagi') return '';
+
+            const types = ['Dedicated', 'Mitra +', 'Mitra'];
+            types.forEach(type => {
+              let typeHasTask = false;
+              let typeStr = `*👨‍✈️ TIM ${type.toUpperCase()}:*\n`;
+              DATA_COURIERS.filter(c => c.type === type).forEach(c => {
+                if (courierStatuses[c.name]) return; 
+                
+                if (courierTasks[c.name].areas.length > 0) {
+                  const sortedAreas = courierTasks[c.name].areas.sort();
+                  typeStr += `▪️ *${c.name}* : ${sortedAreas.join(', ')}\n`;
+                  typeHasTask = true;
+                }
+              });
+
+              if (tripType === 'Pagi') {
+                text += typeStr;
+                if (!typeHasTask) text += `(Belum ada penugasan)\n`;
+                text += `\n`;
+              } else {
+                if (typeHasTask) {
+                  text += typeStr + `\n`;
+                }
+              }
+            });
+
+            if (tripType === 'Pagi') {
+              text += `*Area Belum Tercover:* `;
+              const unassigned = [];
+              DATA_AREAS.forEach(area => {
+                area.subs.forEach(sub => {
+                  const assignee = assignmentsObj[sub.id];
+                  const isCovered = assignee && !courierStatuses[assignee];
+                  if (!isCovered) {
+                     unassigned.push(`${sub.id} (${area.name} - ${sub.name})`);
+                  }
+                });
+              });
+              text += unassigned.length > 0 ? unassigned.join(', ') : 'NIHIL';
+            }
+
+            return text.trim();
+          };
+
+          const generateWaText = () => {
+            const [y, m, d] = selectedDate.split('-');
+            const dateObj = new Date(y, m - 1, d);
+            const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let finalWa = `📦 *SKEMA SPX PULOSARI*\n📅 ${formattedDate}\n\n`;
+
+            finalWa += getTripText(allAssignments.Pagi, 'Pagi');
+
+            const textSiang = getTripText(allAssignments.Siang, 'Siang');
+            if (textSiang) finalWa += `\n\n*☀️ TRIP SIANG (12:00)*\n${textSiang}`;
+
+            const textSore = getTripText(allAssignments.Sore, 'Sore');
+            if (textSore) finalWa += `\n\n*🌥️ TRIP SORE (14:00)*\n${textSore}`;
+
+            const absentNames = Object.keys(courierStatuses);
+            if (absentNames.length > 0) {
+              finalWa += `\n\n*🌴 INFO KURIR ABSEN:*\n`;
+              absentNames.forEach(name => {
+                 finalWa += `▪️ ${name} : ${courierStatuses[name]}\n`;
+              });
+              finalWa = finalWa.trimEnd();
+            }
+
+            if (customNote.trim()) {
+              finalWa += `\n\n*📌 NOTE:*\n${customNote.trim()}`;
+            }
+
+            finalWa += `\n\n_Semangat pejuang paket! Utamakan keselamatan & SLA._ 🚀`;
+
+            setWaText(finalWa);
+          };
+
+          const copyToClipboard = () => {
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText(waText).then(() => {
+                setCopied(true); setTimeout(() => setCopied(false), 2000);
+              });
+            } else {
+              if (textRef.current) {
+                textRef.current.select();
+                document.execCommand('copy');
+                setCopied(true); setTimeout(() => setCopied(false), 2000);
+              }
+            }
+          };
+
+          return (
+            <div className="min-h-screen bg-gray-50 font-sans pb-20">
+              <header className="bg-[#EE4D2D] text-white p-4 shadow-md sticky top-0 z-10">
+                <div className="max-w-4xl mx-auto flex justify-between items-center">
+                  <div>
+                    <h1 className="text-xl font-bold tracking-wider flex items-center gap-2">
+                      <CheckSquare size={20} /> SPX PULOSARI
+                    </h1>
+                    <p className="text-xs opacity-90 mt-0.5">Generator Skema Area</p>
+                  </div>
+                  <button 
+                    onClick={resetSchema}
+                    className="flex items-center gap-1.5 text-xs bg-white text-[#EE4D2D] px-3 py-1.5 rounded-full font-bold hover:bg-gray-100 transition shadow-sm"
+                  >
+                    <RefreshCw size={14} /> Reset {activeTrip}
+                  </button>
+                </div>
+              </header>
+
+              <main className="max-w-4xl mx-auto p-4 mt-2">
+                
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
+                  <div className="bg-white p-2 md:p-1.5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2 px-4 w-full md:w-auto shrink-0">
+                     <Calendar size={18} className="text-[#EE4D2D]" />
+                     <input 
+                        type="date" 
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="font-bold text-gray-700 outline-none w-full bg-transparent text-sm cursor-pointer"
+                     />
+                  </div>
+
+                  <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 flex gap-1 overflow-x-auto flex-1 custom-scrollbar">
+                    {TRIP_OPTIONS.map(trip => {
+                      const hasData = Object.keys(allAssignments[trip.id]).length > 0;
+                      const isActive = activeTrip === trip.id;
+                      return (
+                        <button
+                          key={trip.id}
+                          onClick={() => setActiveTrip(trip.id)}
+                          className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all relative whitespace-nowrap
+                            ${isActive ? 'bg-[#EE4D2D] text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
+                        >
+                          <Clock size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
+                          {trip.label}
+                          {hasData && !isActive && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full shadow-sm"></span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  
+                  <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 h-fit">
+                    <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">1. Pilih Kurir & Centang Area</h2>
+                    
+                    <div className="space-y-3">
+                      {DATA_COURIERS.map((courier, index) => {
+                        const isExpanded = expandedCourier === courier.name;
+                        const courierStatus = courierStatuses[courier.name];
+                        const isAbsent = !!courierStatus;
+                        const myAreasCount = Object.values(assignments).filter(name => name === courier.name).length;
+                        
+                        return (
+                          <div key={index} className={`bg-white rounded-lg border overflow-hidden shadow-sm transition-all 
+                            ${isAbsent ? 'border-red-200 opacity-80' : 'border-gray-200'}`}>
+                            
+                            <div 
+                              className={`p-3 md:p-4 flex justify-between items-center cursor-pointer select-none transition-colors
+                                ${isExpanded ? 'bg-[#EE4D2D]/10' : (isAbsent ? 'bg-red-50/30' : 'hover:bg-gray-50')}`}
+                              onClick={() => setExpandedCourier(isExpanded ? null : courier.name)}
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-bold text-gray-800 text-sm md:text-base">{courier.name}</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-[10px] md:text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                                    {courier.type}
+                                  </span>
+                                  {!isAbsent && myAreasCount > 0 && (
+                                    <span className="text-[10px] md:text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">
+                                      {myAreasCount} Area Terpilih
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <select 
+                                  value={courierStatus || 'HADIR'}
+                                  onChange={(e) => handleStatusChange(courier.name, e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`text-[10px] md:text-xs font-bold rounded px-1.5 py-1 outline-none border cursor-pointer
+                                    ${isAbsent ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
+                                >
+                                  <option value="HADIR">HADIR</option>
+                                  <option value="OFF">OFF</option>
+                                  <option value="LIBUR">LIBUR</option>
+                                  <option value="CUTI">CUTI</option>
+                                </select>
+                                <div className="text-gray-400">
+                                  {isExpanded ? <ChevronUp size={20} className="text-[#EE4D2D]" /> : <ChevronDown size={20} />}
+                                </div>
+                              </div>
+                            </div>
+
+                            {isExpanded && (
+                              <div className="p-3 md:p-4 bg-gray-50 border-t border-gray-100 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                {isAbsent ? (
+                                  <div className="text-center py-5">
+                                    <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold mb-2">
+                                      STATUS: {courierStatus}
+                                    </span>
+                                    <p className="text-sm text-gray-500">
+                                      Ubah status menjadi <b>HADIR</b> terlebih dahulu untuk dapat memberikan penugasan area kepada kurir ini.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  DATA_AREAS.map(village => {
+                                    const isAllMine = village.subs.every(sub => assignments[sub.id] === courier.name);
+                                    const isSomeMine = !isAllMine && village.subs.some(sub => assignments[sub.id] === courier.name);
+
+                                    return (
+                                      <div key={village.id} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                        <label className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-100 cursor-pointer select-none">
+                                          <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
+                                            checked={isAllMine}
+                                            ref={input => { if (input) input.indeterminate = isSomeMine }}
+                                            onChange={() => handleToggleVillage(village, courier.name)}
+                                          />
+                                          <span className="font-bold text-[#EE4D2D] text-sm md:text-base">
+                                            {village.id} - {village.name} <span className="text-gray-400 text-xs font-normal ml-1">(Pilih Semua)</span>
+                                          </span>
+                                        </label>
+
+                                        <div className="space-y-2 pl-7">
+                                          {village.subs.map(sub => {
+                                            const isMine = assignments[sub.id] === courier.name;
+                                            const currentAssignee = assignments[sub.id];
+                                            const isOther = currentAssignee && currentAssignee !== courier.name;
+
+                                            return (
+                                              <label key={sub.id} className="flex items-start md:items-center space-x-3 cursor-pointer select-none group">
+                                                <input 
+                                                  type="checkbox" 
+                                                  className="w-4 h-4 mt-0.5 md:mt-0 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
+                                                  checked={isMine}
+                                                  onChange={() => handleToggleSubArea(sub.id, courier.name)}
+                                                />
+                                                <div className="flex flex-col md:flex-row md:items-center text-sm">
+                                                  <span className="text-gray-700 group-hover:text-black">
+                                                    <span className="font-bold bg-gray-100 px-1.5 py-0.5 rounded text-xs mr-1.5 border border-gray-200">{sub.id}</span> 
+                                                    {sub.name}
+                                                  </span>
+                                                  {isOther && (
+                                                    <span className="md:ml-2 mt-1 md:mt-0 text-[10px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 w-fit">
+                                                      Diambil: {currentAssignee}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </label>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+                                    )
+                                  })
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[80vh] sticky top-20">
+                    <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+                      <MessageCircle size={20} className="text-green-500" /> 2. Hasil Skema (Copy WA)
+                    </h2>
+
+                    <div className="mb-3">
+                      <label className="text-xs font-bold text-gray-700 mb-1 block">Catatan Tambahan (Opsional):</label>
+                      <textarea 
+                        className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none custom-scrollbar"
+                        rows="2"
+                        placeholder="Ketik catatan, info libur, atau instruksi khusus di sini..."
+                        value={customNote}
+                        onChange={(e) => setCustomNote(e.target.value)}
+                      ></textarea>
+                    </div>
+
+                    <textarea 
+                      ref={textRef}
+                      className="flex-1 w-full border border-gray-200 rounded-lg p-3 md:p-4 text-xs md:text-sm font-mono bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-400 whitespace-pre-wrap custom-scrollbar"
+                      readOnly
+                      value={waText}
+                    />
+                    <button 
+                      onClick={copyToClipboard}
+                      className={`mt-4 w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-sm
+                        ${copied ? 'bg-green-500 text-white transform scale-[0.98]' : 'bg-[#EE4D2D] text-white hover:bg-[#d64325]'}`}
+                    >
+                      <ClipboardCopy size={20} />
+                      {copied ? 'Berhasil Disalin!' : 'Copy Untuk WhatsApp'}
+                    </button>
+                  </div>
+
+                </div>
+              </main>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
