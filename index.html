@@ -70,13 +70,17 @@
         ];
 
         const DATA_COURIERS = [
-          { name: 'Deni', type: 'Dedicated' }, { name: 'Lutfi', type: 'Dedicated' },
-          { name: 'Syarif Hidayatulloh', type: 'Dedicated' }, { name: 'Singgih', type: 'Dedicated' },
-          { name: 'Hengki', type: 'Dedicated' }, { name: 'Rocky', type: 'Mitra +' },
-          { name: 'Slamet', type: 'Mitra' }, { name: 'Aditya', type: 'Mitra' },
-          { name: 'Aminullah', type: 'Mitra' }, { name: 'Ichsan', type: 'Mitra' },
-          { name: 'Leman', type: 'Mitra' }, { name: 'Amin Jaya', type: 'Mitra' },
-          { name: 'Muzaki', type: 'Mitra' }
+          { name: 'Deni', type: 'Dedicated' }, 
+          { name: 'Lutfi', type: 'Dedicated' },
+          { name: 'Syarif Hidayatulloh', type: 'Dedicated' }, 
+          { name: 'Singgih', type: 'Dedicated' },
+          { name: 'Hengki', type: 'Dedicated' }, 
+          { name: 'Rocky', type: 'Mitra +' },
+          { name: 'Aditya', type: 'Mitra +' },
+          { name: 'Slamet', type: 'Mitra +' }, 
+          { name: 'Aminullah', type: 'Mitra +' },
+          { name: 'Leman', type: 'Mitra +' },
+          { name: 'Ichsan', type: 'Mitra' }
         ];
 
         const TRIP_OPTIONS = [
@@ -84,6 +88,19 @@
           { id: 'Siang', label: 'Trip Siang (12:00)' },
           { id: 'Sore', label: 'Trip Sore (14:00)' }
         ];
+
+        // KONFIGURASI DEFAULT SKEMA AREA
+        const DEFAULT_PAGI_ASSIGNMENTS = {
+          'A1': 'Deni', 'A2': 'Deni',
+          'B1': 'Lutfi', 'B2': 'Lutfi', 'B3': 'Lutfi', 'B4': 'Lutfi', 'B5': 'Lutfi',
+          'E1': 'Syarif Hidayatulloh', 'E2': 'Syarif Hidayatulloh', 'E3': 'Syarif Hidayatulloh', 'E4': 'Syarif Hidayatulloh', 'G1': 'Syarif Hidayatulloh', 'G2': 'Syarif Hidayatulloh',
+          'D1': 'Singgih', 'D2': 'Singgih',
+          'D3': 'Aditya', 'D4': 'Aditya',
+          'F1': 'Hengki', 'F2': 'Hengki',
+          'F3': 'Aminullah', 'F4': 'Aminullah',
+          'A3': 'Leman', 'A4': 'Leman',
+          'C1': 'Rocky', 'C2': 'Rocky', 'C3': 'Rocky'
+        };
 
         function App() {
           const [selectedDate, setSelectedDate] = useState(() => {
@@ -94,8 +111,12 @@
 
           const [courierStatuses, setCourierStatuses] = useState({});
           const [activeTrip, setActiveTrip] = useState('Pagi');
+          
+          // Menggunakan state default untuk assignment pagi
           const [allAssignments, setAllAssignments] = useState({
-            Pagi: {}, Siang: {}, Sore: {}
+            Pagi: { ...DEFAULT_PAGI_ASSIGNMENTS }, 
+            Siang: {}, 
+            Sore: {}
           });
           
           const [expandedCourier, setExpandedCourier] = useState(null);
@@ -253,6 +274,27 @@
             const textSore = getTripText(allAssignments.Sore, 'Sore');
             if (textSore) finalWa += `\n\n*🌥️ TRIP SORE (14:00)*\n${textSore}`;
 
+            // Mendeteksi Kurir Standby / Belum Ditugaskan sama sekali
+            const couriersWithTasks = new Set();
+            ['Pagi', 'Siang', 'Sore'].forEach(trip => {
+                Object.values(allAssignments[trip]).forEach(courier => {
+                    couriersWithTasks.add(courier);
+                });
+            });
+
+            const unassignedCouriers = DATA_COURIERS
+                .map(c => c.name)
+                .filter(name => !couriersWithTasks.has(name) && !courierStatuses[name]);
+
+            if (unassignedCouriers.length > 0) {
+              finalWa += `\n\n*🧍 KURIR STANDBY (BELUM ADA TUGAS):*\n`;
+              unassignedCouriers.forEach(name => {
+                  finalWa += `▪️ ${name}\n`;
+              });
+              finalWa = finalWa.trimEnd();
+            }
+
+            // Kurir yang Libur/Absen
             const absentNames = Object.keys(courierStatuses);
             if (absentNames.length > 0) {
               finalWa += `\n\n*🌴 INFO KURIR ABSEN:*\n`;
