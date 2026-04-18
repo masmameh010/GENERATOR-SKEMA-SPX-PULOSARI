@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- Tambahan Library Peta (Leaflet JS & CSS) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -41,7 +42,7 @@
         const Settings = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
         const MapIcon = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>;
 
-        // --- DATA GEOJSON DARI GOOGLE EARTH (UPDATED) ---
+        // --- DATA GEOJSON DARI GOOGLE EARTH ---
         const GEOJSON_WARYAN = {
         "type": "FeatureCollection",
         "name": "WARYAN",
@@ -258,7 +259,7 @@
             'B5':'Lutfi',                                           // Lutfi ambil B5
             'C1':'Rocky', 'C2':'Rocky', 'C3':'Rocky',               // Rocky ambil C3
             'D1':'Slamet', 'D2':'Slamet',                           // Slamet cover Singgih D2
-            'D3':'Aditya', 'D4':'Aditya',                           // Aditya cover Singgih D3
+            'D3':'Aditya', 'D4':'Aditya',                           // Aditya cover Singgih D3, D4
             'D5':'Syarif Hidayatulloh', 'G1':'Syarif Hidayatulloh'  // Syarif cover Aditya D5, G1
           }; 
           
@@ -841,6 +842,77 @@
                 </main>
               )}
 
+              {activeMenu === 'calendar' && (
+                <main className="max-w-5xl mx-auto p-4 mt-2 animate-in fade-in duration-300">
+                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="mb-6 border-b pb-4">
+                      <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <CalendarDays className="text-[#EE4D2D]" size={24}/> Kalender Libur Kurir
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-2">Asumsi 1 April jatuh pada hari Rabu. Menampilkan jadwal dinas (✔️) dan Libur bulanan.</p>
+                    </div>
+
+                    <div className="space-y-8">
+                      {[
+                        { title: 'Periode: 1 - 15', start: 1, end: 15 },
+                        { title: 'Periode: 16 - 30', start: 16, end: 30 }
+                      ].map(period => {
+                        const getDayIdx = (tgl) => (tgl + 2) % 7;
+                        
+                        // PERBAIKAN: Menggunakan array manual yang 100% stabil di semua browser/HP
+                        const daysArray = [];
+                        for (let d = period.start; d <= period.end; d++) {
+                            daysArray.push(d);
+                        }
+
+                        return (
+                          <div key={period.title} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-gray-50 px-4 py-3 border-b">
+                              <h3 className="font-bold text-gray-700">{period.title}</h3>
+                            </div>
+                            <div className="overflow-x-auto custom-scrollbar pb-2">
+                              <table className="w-full text-xs md:text-sm text-center border-collapse min-w-[600px]">
+                                <thead className="bg-gray-100 text-gray-600">
+                                  <tr>
+                                    <th className="px-3 py-2 border text-left sticky left-0 bg-gray-100 z-10 w-24">Kurir</th>
+                                    {daysArray.map(tgl => {
+                                      const dIdx = getDayIdx(tgl);
+                                      const isWeekend = dIdx === 6 || dIdx === 0;
+                                      return (
+                                        <th key={tgl} className={`px-1.5 py-2 border min-w-[30px] ${isWeekend ? 'bg-red-50 text-red-600' : ''}`}>
+                                          {tgl}<br/><span className="text-[10px] font-normal">{DAYS_NAME[dIdx].substring(0,3)}</span>
+                                        </th>
+                                      )
+                                    })}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {DATA_COURIERS.map(courier => (
+                                    <tr key={courier.name} className="hover:bg-gray-50">
+                                      <td className="px-3 py-2 border text-left font-bold text-gray-800 sticky left-0 bg-white z-10">{courier.name}</td>
+                                      {daysArray.map(tgl => {
+                                        const dIdx = getDayIdx(tgl);
+                                        const isOff = WEEKLY_OFF[dIdx]?.includes(courier.name);
+                                        
+                                        return (
+                                          <td key={tgl} className={`px-1 border ${isOff ? 'bg-red-500 text-white font-bold text-[10px]' : 'text-green-500'}`}>
+                                            {isOff ? 'OFF' : '✔️'}
+                                          </td>
+                                        )
+                                      })}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </main>
+              )}
+
               {/* HALAMAN 4: PETA AREA */}
               {activeMenu === 'map' && (
                 <main className="max-w-5xl mx-auto p-4 mt-2 animate-in fade-in duration-300">
@@ -850,7 +922,7 @@
                         <MapIcon className="text-[#EE4D2D]" size={24}/> Peta Area Per Desa
                       </h2>
                       <p className="text-sm text-gray-500 mt-2">
-                        Ini adalah kanvas peta interaktif wilayah Pulosari. Anda bisa mengintegrasikan file data Google Earth (<span className="font-bold text-blue-500">.KML</span>) ke sini agar batas RW/Desa tergambar otomatis.
+                        Ini adalah kanvas peta interaktif wilayah Pulosari. Titik-titik pengiriman dan area wilayah yang diintegrasikan dari Google Earth akan muncul di bawah ini.
                       </p>
                     </div>
 
