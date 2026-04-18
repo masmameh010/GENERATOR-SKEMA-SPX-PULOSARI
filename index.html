@@ -8,6 +8,11 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tambahan Library Peta (Leaflet JS & CSS) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
@@ -35,6 +40,83 @@
         const FileText = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
         const CalendarDays = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>;
         const Settings = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+        const MapIcon = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>;
+
+        // --- DATA GEOJSON DARI GOOGLE EARTH (UPDATED) ---
+        const GEOJSON_WARYAN = {
+        "type": "FeatureCollection",
+        "name": "WARYAN",
+        "features": [
+        { "type": "Feature", "properties": { "Name": "IQBALUS" }, "geometry": { "type": "Point", "coordinates": [ 109.2068995, -7.1747059, 1033.6560287 ] } },
+        { "type": "Feature", "properties": { "Name": "PUTRA" }, "geometry": { "type": "Point", "coordinates": [ 109.2070341, -7.1745021, 1031.7024417 ] } },
+        { "type": "Feature", "properties": { "Name": "ROHMAN" }, "geometry": { "type": "Point", "coordinates": [ 109.2067554, -7.1743447, 1030.4422552 ] } },
+        { "type": "Feature", "properties": { "Name": "WARUNG HASAN/KHASAN" }, "geometry": { "type": "Point", "coordinates": [ 109.2070318, -7.17432, 1030.2349631 ] } },
+        { "type": "Feature", "properties": { "Name": "RAHMADINA / PAK RT 30" }, "geometry": { "type": "Point", "coordinates": [ 109.2069082, -7.1749091, 1035.6296863 ] } },
+        { "type": "Feature", "properties": { "Name": "KHALIMATUL AISIFA" }, "geometry": { "type": "Point", "coordinates": [ 109.2073044, -7.1746168, 1032.1407556 ] } },
+        { "type": "Feature", "properties": { "Name": "NISA 30/3" }, "geometry": { "type": "Point", "coordinates": [ 109.2072952, -7.1747183, 1032.8150172 ] } },
+        { "type": "Feature", "properties": { "Name": "PUTRA" }, "geometry": { "type": "Point", "coordinates": [ 109.2075209, -7.1746626, 1031.8213361 ] } },
+        { "type": "Feature", "properties": { "Name": "MS SATRIA" }, "geometry": { "type": "Point", "coordinates": [ 109.2074244, -7.1746517, 1032.1659097 ] } },
+        { "type": "Feature", "properties": { "Name": "ANTI WIDYA" }, "geometry": { "type": "Point", "coordinates": [ 109.2069183, -7.1740491, 1028.2305985 ] } },
+        { "type": "Feature", "properties": { "Name": "UMI AZIZAH" }, "geometry": { "type": "Point", "coordinates": [ 109.20707, -7.1739247, 1026.5961329 ] } },
+        { "type": "Feature", "properties": { "Name": "ANTOBIIN" }, "geometry": { "type": "Point", "coordinates": [ 109.2069571, -7.1738926, 1026.2332874 ] } },
+        { "type": "Feature", "properties": { "Name": "WILDHAN LUKNI MAULANA" }, "geometry": { "type": "Point", "coordinates": [ 109.2069586, -7.1737774, 1025.4354061 ] } },
+        { "type": "Feature", "properties": { "Name": "REFI" }, "geometry": { "type": "Point", "coordinates": [ 109.2067472, -7.1736198, 1023.3564075 ] } },
+        { "type": "Feature", "properties": { "Name": "Untitled placemark" }, "geometry": { "type": "Point", "coordinates": [ 109.2072373, -7.1738151, 1025.63971 ] } },
+        { "type": "Feature", "properties": { "Name": "SITI HALIMAH" }, "geometry": { "type": "Point", "coordinates": [ 109.2071913, -7.1738037, 1025.644414 ] } },
+        { "type": "Feature", "properties": { "Name": "SASA 23/3" }, "geometry": { "type": "Point", "coordinates": [ 109.2073105, -7.173852, 1025.8791002 ] } },
+        { "type": "Feature", "properties": { "Name": "WAIDIN 23" }, "geometry": { "type": "Point", "coordinates": [ 109.2077078, -7.1740279, 1025.9672278 ] } },
+        { "type": "Feature", "properties": { "Name": "RIZAL" }, "geometry": { "type": "Point", "coordinates": [ 109.2076886, -7.1740589, 1026.4557949 ] } },
+        { "type": "Feature", "properties": { "Name": "M.UMAR" }, "geometry": { "type": "Point", "coordinates": [ 109.2079109, -7.1745372, 1029.0024401 ] } },
+        { "type": "Feature", "properties": { "Name": "MISKATUL" }, "geometry": { "type": "Point", "coordinates": [ 109.2080613, -7.1751472, 1034.6325483 ] } },
+        { "type": "Feature", "properties": { "Name": "NURUL" }, "geometry": { "type": "Point", "coordinates": [ 109.2078638, -7.1750372, 1034.1011692 ] } },
+        { "type": "Feature", "properties": { "Name": "FAIZIN LAS" }, "geometry": { "type": "Point", "coordinates": [ 109.2080348, -7.1751403, 1034.6391999 ] } },
+        { "type": "Feature", "properties": { "Name": "ATUL" }, "geometry": { "type": "Point", "coordinates": [ 109.2076547, -7.1750892, 1035.3361249 ] } },
+        { "type": "Feature", "properties": { "Name": "NUNU" }, "geometry": { "type": "Point", "coordinates": [ 109.20765, -7.1752714, 1037.4095938 ] } },
+        { "type": "Feature", "properties": { "Name": "LIAINDRA13" }, "geometry": { "type": "Point", "coordinates": [ 109.207631, -7.1753657, 1038.4958039 ] } },
+        { "type": "Feature", "properties": { "Name": "RIYANTO 23" }, "geometry": { "type": "Point", "coordinates": [ 109.2078619, -7.1745491, 1028.941435 ] } },
+        { "type": "Feature", "properties": { "Name": "DWI RIYANTO" }, "geometry": { "type": "Point", "coordinates": [ 109.2072479, -7.1741242, 1028.0270928 ] } }
+        ]
+        };
+
+        const GEOJSON_KARANGSARI_BARAT = {
+        "type": "FeatureCollection",
+        "name": "KARANGSARI BARAT",
+        "features": [
+        { "type": "Feature", "properties": { "Name": "RT19 RW3" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 109.2139663, -7.1641254, 0.0 ], [ 109.2134787, -7.1638859, 0.0 ], [ 109.2132036, -7.1642632, 0.0 ], [ 109.2130513, -7.1642567, 0.0 ], [ 109.2128673, -7.1641309, 0.0 ], [ 109.2130746, -7.1638568, 0.0 ], [ 109.2128341, -7.1636857, 0.0 ], [ 109.2125392, -7.1638174, 0.0 ], [ 109.2121834, -7.1635771, 0.0 ], [ 109.2118626, -7.1637722, 0.0 ], [ 109.211647, -7.1640308, 0.0 ], [ 109.2118949, -7.1644101, 0.0 ], [ 109.2120594, -7.1642412, 0.0 ], [ 109.2123359, -7.1644258, 0.0 ], [ 109.2122872, -7.1645293, 0.0 ], [ 109.2124829, -7.1645378, 0.0 ], [ 109.2126481, -7.164629, 0.0 ], [ 109.2124848, -7.1648981, 0.0 ], [ 109.2130794, -7.1652373, 0.0 ], [ 109.2135227, -7.1654953, 0.0 ], [ 109.2136159, -7.1653348, 0.0 ], [ 109.2137097, -7.1649459, 0.0 ], [ 109.2138679, -7.1646514, 0.0 ], [ 109.2139218, -7.1644788, 0.0 ], [ 109.2139663, -7.1641254, 0.0 ] ] ] } },
+        { "type": "Feature", "properties": { "Name": "RT18 RW3" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 109.2140451, -7.1639123, 0.0 ], [ 109.2140053, -7.1641196, 0.0 ], [ 109.2140159, -7.1642851, 0.0 ], [ 109.2139505, -7.164531, 0.0 ], [ 109.2137399, -7.1649447, 0.0 ], [ 109.2136879, -7.1650679, 0.0 ], [ 109.2136473, -7.1652063, 0.0 ], [ 109.2136028, -7.1654606, 0.0 ], [ 109.2135271, -7.1655167, 0.0 ], [ 109.2124751, -7.1649068, 0.0 ], [ 109.2123812, -7.1650374, 0.0 ], [ 109.2125327, -7.1652636, 0.0 ], [ 109.2123943, -7.1657059, 0.0 ], [ 109.2130374, -7.1660162, 0.0 ], [ 109.2135315, -7.1655737, 0.0 ], [ 109.2141616, -7.1657826, 0.0 ], [ 109.2143711, -7.1650981, 0.0 ], [ 109.2145055, -7.1647277, 0.0 ], [ 109.214295, -7.1646071, 0.0 ], [ 109.2145799, -7.1639675, 0.0 ], [ 109.2141456, -7.1637651, 0.0 ], [ 109.2140451, -7.1639123, 0.0 ] ] ] } },
+        { "type": "Feature", "properties": { "Name": "RT20 RW3" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 109.2113902, -7.1642958, 0.0 ], [ 109.2112212, -7.164575, 0.0 ], [ 109.2108262, -7.1650173, 0.0 ], [ 109.2102978, -7.1648396, 0.0 ], [ 109.2101774, -7.1651539, 0.0 ], [ 109.210495, -7.1652752, 0.0 ], [ 109.2106319, -7.1653648, 0.0 ], [ 109.2107087, -7.1655862, 0.0 ], [ 109.2109931, -7.1656836, 0.0 ], [ 109.2112262, -7.1653827, 0.0 ], [ 109.211353, -7.1653832, 0.0 ], [ 109.2113232, -7.1655311, 0.0 ], [ 109.2115934, -7.1656604, 0.0 ], [ 109.2119338, -7.1659941, 0.0 ], [ 109.2123525, -7.1657171, 0.0 ], [ 109.2124581, -7.1654268, 0.0 ], [ 109.2123656, -7.1650417, 0.0 ], [ 109.2126321, -7.1646344, 0.0 ], [ 109.2124719, -7.1645546, 0.0 ], [ 109.2122736, -7.1645412, 0.0 ], [ 109.2123273, -7.1644283, 0.0 ], [ 109.2120686, -7.1642621, 0.0 ], [ 109.2118706, -7.1644251, 0.0 ], [ 109.2116202, -7.1640583, 0.0 ], [ 109.2113902, -7.1642958, 0.0 ] ] ] } },
+        { "type": "Feature", "properties": { "Name": "SORAYA SEDAPUR" }, "geometry": { "type": "Point", "coordinates": [ 109.2139857, -7.1628889, 869.5055543 ] } },
+        { "type": "Feature", "properties": { "Name": "HARTONO SEDAPUR" }, "geometry": { "type": "Point", "coordinates": [ 109.2138964, -7.1628616, 869.8193573 ] } },
+        { "type": "Feature", "properties": { "Name": "MELIA EKA SEDAPUR" }, "geometry": { "type": "Point", "coordinates": [ 109.2139208, -7.1629206, 870.1641326 ] } },
+        { "type": "Feature", "properties": { "Name": "TOKO GEDE" }, "geometry": { "type": "Point", "coordinates": [ 109.214053, -7.1639969, 874.7674367 ] } },
+        { "type": "Feature", "properties": { "Name": "WARNING ( EDI< GALANG)" }, "geometry": { "type": "Point", "coordinates": [ 109.2140953, -7.164148, 876.5737778 ] } },
+        { "type": "Feature", "properties": { "Name": "ARIMBIE JASMINE" }, "geometry": { "type": "Point", "coordinates": [ 109.2139132, -7.164276, 879.4466698 ] } },
+        { "type": "Feature", "properties": { "Name": "SUCI ARYANI" }, "geometry": { "type": "Point", "coordinates": [ 109.2140648, -7.1643746, 878.6476833 ] } },
+        { "type": "Feature", "properties": { "Name": "SUIROHATI" }, "geometry": { "type": "Point", "coordinates": [ 109.2141939, -7.1644196, 879.2085995 ] } },
+        { "type": "Feature", "properties": { "Name": "INDAH YULI ABIZZAR" }, "geometry": { "type": "Point", "coordinates": [ 109.2140438, -7.1644698, 879.6752117 ] } },
+        { "type": "Feature", "properties": { "Name": "TIVANY NOVY" }, "geometry": { "type": "Point", "coordinates": [ 109.2143067, -7.1647993, 880.5822205 ] } },
+        { "type": "Feature", "properties": { "Name": "ALFIATUN 18/3" }, "geometry": { "type": "Point", "coordinates": [ 109.2140939, -7.165181, 880.9110862 ] } },
+        { "type": "Feature", "properties": { "Name": "PUPUTRY" }, "geometry": { "type": "Point", "coordinates": [ 109.2139806, -7.1650123, 881.9838753 ] } },
+        { "type": "Feature", "properties": { "Name": "NURHIKMAH 18" }, "geometry": { "type": "Point", "coordinates": [ 109.2139951, -7.1650247, 881.7677975 ] } },
+        { "type": "Feature", "properties": { "Name": "M.Rizky Dwi A" }, "geometry": { "type": "Point", "coordinates": [ 109.2137757, -7.1649835, 882.9471754 ] } },
+        { "type": "Feature", "properties": { "Name": "Tiara Ayu" }, "geometry": { "type": "Point", "coordinates": [ 109.2137899, -7.164988, 882.9632451 ] } },
+        { "type": "Feature", "properties": { "Name": "Faizal Zidan" }, "geometry": { "type": "Point", "coordinates": [ 109.2141628, -7.1644451, 879.5814635 ] } },
+        { "type": "Feature", "properties": { "Name": "NIA MAMANE ELSA" }, "geometry": { "type": "Point", "coordinates": [ 109.2094619, -7.1657524, 921.3548888 ] } },
+        { "type": "Feature", "properties": { "Name": "TOTO / KANTO" }, "geometry": { "type": "Point", "coordinates": [ 109.2101067, -7.1659851, 920.0150584 ] } },
+        { "type": "Feature", "properties": { "Name": "IBU TASRI BPK SLAMET" }, "geometry": { "type": "Point", "coordinates": [ 109.2096678, -7.166222, 925.4511785 ] } },
+        { "type": "Feature", "properties": { "Name": "ELMA LUSIATI / MASJONI" }, "geometry": { "type": "Point", "coordinates": [ 109.2095506, -7.1665091, 928.0584922 ] } },
+        { "type": "Feature", "properties": { "Name": "YESI MAMA FATIR FATAN ENEN" }, "geometry": { "type": "Point", "coordinates": [ 109.2099368, -7.1664829, 925.932485 ] } },
+        { "type": "Feature", "properties": { "Name": "SUSILOWATI" }, "geometry": { "type": "Point", "coordinates": [ 109.2104216, -7.1670212, 925.7215757 ] } },
+        { "type": "Feature", "properties": { "Name": "KRISNA ADE PUTRA / WATI" }, "geometry": { "type": "Point", "coordinates": [ 109.211284, -7.1666276, 921.3154558 ] } },
+        { "type": "Feature", "properties": { "Name": "ITA" }, "geometry": { "type": "Point", "coordinates": [ 109.2102402, -7.1669176, 927.420664 ] } },
+        { "type": "Feature", "properties": { "Name": "YUTRI" }, "geometry": { "type": "Point", "coordinates": [ 109.2093663, -7.1665928, 928.8781167 ] } },
+        { "type": "Feature", "properties": { "Name": "LIBRYANI DWI" }, "geometry": { "type": "Point", "coordinates": [ 109.2092516, -7.1667929, 931.6838017 ] } },
+        { "type": "Feature", "properties": { "Name": "YUNI ASTUTI" }, "geometry": { "type": "Point", "coordinates": [ 109.2091117, -7.1669447, 931.07085 ] } },
+        { "type": "Feature", "properties": { "Name": "SUMIYATI" }, "geometry": { "type": "Point", "coordinates": [ 109.2091273, -7.1668202, 930.758905 ] } },
+        { "type": "Feature", "properties": { "Name": "SITI MASITOH" }, "geometry": { "type": "Point", "coordinates": [ 109.2092261, -7.1669243, 931.843709 ] } },
+        { "type": "Feature", "properties": { "Name": "ERWIN ANOMALI" }, "geometry": { "type": "Point", "coordinates": [ 109.2093387, -7.1670954, 931.869588 ] } },
+        { "type": "Feature", "properties": { "Name": "TASYA" }, "geometry": { "type": "Point", "coordinates": [ 109.2094926, -7.1670459, 931.993917 ] } },
+               const Settings = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
 
         // --- DATA MASTER (AREA DETIL SESUAI CONTOH WA) ---
         const DATA_AREAS = [
