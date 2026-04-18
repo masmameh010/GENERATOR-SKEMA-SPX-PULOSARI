@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPX Pulosari Team - Generator Skema</title>
-    
-    <!-- Load Tailwind CSS untuk styling -->
+    <title>SPX Pulosari Smart System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Load React, ReactDOM, dan Babel (Agar bisa menjalankan React di dalam HTML) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
@@ -28,7 +23,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- KOMPONEN IKON (Pengganti Lucide agar jalan di HTML) ---
+        // --- KOMPONEN IKON ---
         const CheckSquare = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>;
         const RefreshCw = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
         const Calendar = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
@@ -37,50 +32,33 @@
         const ChevronDown = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"></polyline></svg>;
         const MessageCircle = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
         const ClipboardCopy = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
+        const FileText = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
+        const CalendarDays = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>;
+        const Settings = ({size=24, className=""}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
 
-        // --- DATA INITIALIZATION ---
+        // --- DATA MASTER (AREA DETIL SESUAI CONTOH WA) ---
         const DATA_AREAS = [
-          { id: 'A', name: 'Desa Pulosari', subs: [
-            { id: 'A1', name: 'Dukuh Karangpoh' }, { id: 'A2', name: 'Dukuh Desa' },
-            { id: 'A3', name: 'Dukuh Tumbu' }, { id: 'A4', name: 'Dukuh Gunung' }
-          ]},
-          { id: 'B', name: 'Desa Penakir', subs: [
-            { id: 'B1', name: 'Dukuh Krajan' }, { id: 'B2', name: 'Dukuh Sigeblog' },
-            { id: 'B3', name: 'Dukuh Sawangan' }, { id: 'B4', name: 'Dukuh Sarangan' }, { id: 'B5', name: 'Dukuh Wanasari' }
-          ]},
-          { id: 'C', name: 'Desa Nyalembeng', subs: [
-            { id: 'C1', name: 'Rw 1' }, { id: 'C2', name: 'Rw 2' }, { id: 'C3', name: 'Rw 3' }
-          ]},
-          { id: 'D', name: 'Desa Karangsari', subs: [
-            { id: 'D1', name: 'Nusa Rw 2 (RT 11-17)' }, { id: 'D2', name: 'Pesuruan Rw 4 (RT 24-28)' },
-            { id: 'D3', name: 'Krajan Rw 1 (RT 1-10, 29)' }, { id: 'D4', name: 'Karangsari Barat Rw 3 (RT 18-22)' },
-            { id: 'D5', name: 'Dukuh Waryan Rw 3 (RT 23, 30)' }
-          ]},
-          { id: 'E', name: 'Desa Gunungsari', subs: [
-            { id: 'E1', name: 'Dukuh Krajan Rw 1' }, { id: 'E2', name: 'Dukuh Sipendil Rw 3' },
-            { id: 'E3', name: 'Dukuh Silegok Rw 4' }, { id: 'E4', name: 'Dukuh Sibedil Rw 2' }
-          ]},
-          { id: 'F', name: 'Desa Gambuhan', subs: [
-            { id: 'F1', name: 'Gambuhan Rw 1' }, { id: 'F2', name: 'Gambuhan Rw 2' },
-            { id: 'F3', name: 'Gambuhan Rw 3' }, { id: 'F4', name: 'Gambuhan Rw 4' }
-          ]},
-          { id: 'G', name: 'Desa Jurangmangu', subs: [
-            { id: 'G1', name: 'RT 1, 2, 3, 4 RW 1' }, { id: 'G2', name: 'RT 5, 6, 7 RW 2' }
-          ]}
+          { id: 'A', name: 'Desa Pulosari', subs: [{id:'A1', name:'Dukuh Karangpoh'}, {id:'A2', name:'Dukuh Desa'}, {id:'A3', name:'Dukuh Tumbu'}, {id:'A4', name:'Dukuh Gunung'}]},
+          { id: 'B', name: 'Desa Penakir', subs: [{id:'B1', name:'Dukuh Krajan'}, {id:'B2', name:'Dukuh Sigeblog'}, {id:'B3', name:'Dukuh Sawangan'}, {id:'B4', name:'Dukuh Sarangan'}, {id:'B5', name:'Dukuh Wanasari'}]},
+          { id: 'C', name: 'Desa Nyalembeng', subs: [{id:'C1', name:'Rw 1'}, {id:'C2', name:'Rw 2'}, {id:'C3', name:'Rw 3'}]},
+          { id: 'D', name: 'Desa Karangsari', subs: [{id:'D1', name:'Dk. Nusa (RT 11-17), RW 2'}, {id:'D2', name:'Dk. Pesuruan (RT 24-28), RW 4'}, {id:'D3', name:'Dk. Krajan (RT 1-10), RW 1'}, {id:'D4', name:'Karangsari Barat (RT 18-22), RW 3'}, {id:'D5', name:'Dk. Waryan (RT 23, 30), RW 3'}]},
+          { id: 'E', name: 'Desa Gunungsari', subs: [{id:'E1', name:'Dukuh Krajan Rw 1'}, {id:'E2', name:'Dukuh Sipendil Rw 3'}, {id:'E3', name:'Dukuh Silegok Rw 4'}, {id:'E4', name:'Dukuh Sibedil Rw 2'}]},
+          { id: 'F', name: 'Desa Gambuhan', subs: [{id:'F1', name:'Gambuhan Rw 1'}, {id:'F2', name:'Gambuhan Rw 2'}, {id:'F3', name:'Gambuhan Rw 3'}, {id:'F4', name:'Gambuhan Rw 4'}]},
+          { id: 'G', name: 'Desa Jurangmangu', subs: [{id:'G1', name:'Semua Wilayah'}]}
         ];
 
+        // 10 Couriers Total. Ichsan & Hengki Removed. Alul Added as Mitra +. Aminullah is Dedicated.
         const DATA_COURIERS = [
           { name: 'Deni', type: 'Dedicated' }, 
           { name: 'Lutfi', type: 'Dedicated' },
           { name: 'Syarif Hidayatulloh', type: 'Dedicated' }, 
           { name: 'Singgih', type: 'Dedicated' },
-          { name: 'Hengki', type: 'Dedicated' }, 
-          { name: 'Rocky', type: 'Mitra +' },
-          { name: 'Aditya', type: 'Mitra +' },
+          { name: 'Aminullah', type: 'Dedicated' }, 
+          { name: 'Rocky', type: 'Mitra +' }, 
+          { name: 'Aditya', type: 'Mitra +' }, 
           { name: 'Slamet', type: 'Mitra +' }, 
-          { name: 'Aminullah', type: 'Mitra +' },
-          { name: 'Leman', type: 'Mitra +' },
-          { name: 'Ichsan', type: 'Mitra' }
+          { name: 'Leman', type: 'Mitra +' }, 
+          { name: 'Alul', type: 'Mitra +' }
         ];
 
         const TRIP_OPTIONS = [
@@ -89,43 +67,132 @@
           { id: 'Sore', label: 'Trip Sore (14:00)' }
         ];
 
-        // KONFIGURASI DEFAULT SKEMA AREA
-        const DEFAULT_PAGI_ASSIGNMENTS = {
-          'A1': 'Deni', 'A2': 'Deni',
-          'B1': 'Lutfi', 'B2': 'Lutfi', 'B3': 'Lutfi', 'B4': 'Lutfi', 'B5': 'Lutfi',
-          'E1': 'Syarif Hidayatulloh', 'E2': 'Syarif Hidayatulloh', 'E3': 'Syarif Hidayatulloh', 'E4': 'Syarif Hidayatulloh', 'G1': 'Syarif Hidayatulloh', 'G2': 'Syarif Hidayatulloh', 'D5': 'Syarif Hidayatulloh', 
-          'D1': 'Singgih', 'D2': 'Singgih',
-          'D3': 'Aditya', 'D4': 'Aditya',
-          'F1': 'Hengki', 'F2': 'Hengki',
-          'F3': 'Aminullah', 'F4': 'Aminullah',
-          'A3': 'Leman', 'A4': 'Leman',
-          'C1': 'Rocky', 'C2': 'Rocky', 'C3': 'Rocky'
+        // --- SKEMA DEFAULT BASE MURNI ---
+        const BASE_SCHEMA = {
+          'A1':'Deni', 'A2':'Deni', 'A3':'Leman', 'A4':'Leman',
+          'B1':'Lutfi', 'B2':'Lutfi', 'B3':'Lutfi', 'B4':'Lutfi', 'B5':'Rocky',
+          'C1':'Rocky', 'C2':'Rocky', 'C3':'Slamet',
+          'D1':'Slamet', 'D2':'Singgih', 'D3':'Singgih', 
+          'D4':'Aditya', 'D5':'Aditya', 'G1':'Aditya', 'F1':'Aditya', 
+          'E1':'Syarif Hidayatulloh', 'E2':'Syarif Hidayatulloh', 'E3':'Syarif Hidayatulloh', 'E4':'Syarif Hidayatulloh',
+          'F2':'Alul', 
+          'F3':'Aminullah', 'F4':'Aminullah' 
         };
 
+        // --- LOGIKA JADWAL LIBUR BARU ---
+        const WEEKLY_OFF = {
+          1: ['Lutfi', 'Aditya'],    // Senin 
+          2: ['Deni', 'Alul'],       // Selasa
+          3: ['Syarif Hidayatulloh', 'Leman'], // Rabu
+          4: ['Slamet'],             // Kamis
+          5: ['Singgih'],            // Jumat
+          6: ['Rocky'],              // Sabtu
+          0: ['Aminullah']           // Minggu 
+        };
+
+        const DAYS_NAME = { 1: 'Senin', 2: 'Selasa', 3: 'Rabu', 4: 'Kamis', 5: 'Jumat', 6: 'Sabtu', 0: 'Minggu' };
+
+        // --- LOGIKA PERGESERAN AREA CERDAS ---
+        const getDailySchema = (day) => {
+          if (day === 1) return { ...BASE_SCHEMA, 
+            'B1':'Rocky', 'B2':'Rocky', 'B3':'Rocky', 'B4':'Rocky', // Rocky cover Lutfi
+            'C1':'Slamet', 'C2':'Slamet',                           // Slamet cover Rocky
+            'D1':'Singgih', 'D4':'Singgih',                         // Singgih cover Slamet D1, Aditya D4
+            'D5':'Syarif Hidayatulloh', 'G1':'Syarif Hidayatulloh', // Syarif cover Aditya D5, G1
+            'F1':'Alul'                                             // Alul cover Aditya F1
+          }; // Lutfi & Aditya OFF
+          
+          if (day === 2) return { ...BASE_SCHEMA, 
+            'A1':'Leman', 'A2':'Leman',                             // Leman cover Deni
+            'A3':'Rocky', 'A4':'Rocky',                             // Rocky cover Leman
+            'B5':'Lutfi',                                           // Lutfi ambil B5
+            'C1':'Slamet', 'C2':'Slamet',                           // Slamet cover Rocky
+            'D1':'Singgih',                                         // Singgih cover Slamet D1
+            'F2':'Aminullah'                                        // Aminullah cover Alul F2
+          }; // Deni & Alul OFF
+          
+          if (day === 3) return { ...BASE_SCHEMA, 
+            'A3':'Deni', 'A4':'Deni',                               // Deni cover Leman
+            'E1':'Aditya', 'E2':'Aditya', 'E3':'Aditya', 'E4':'Aditya', // Aditya cover Syarif
+            'D4':'Singgih', 'D5':'Singgih', 'G1':'Singgih',         // Singgih cover Aditya shift
+            'F1':'Alul'                                             // Alul cover Aditya shift
+          }; // Leman & Syarif OFF
+          
+          if (day === 4) return { ...BASE_SCHEMA, 
+            'B5':'Lutfi',                                           // Lutfi ambil B5
+            'C1':'Rocky', 'C2':'Rocky', 'C3':'Rocky',               // Rocky cover Slamet C3
+            'D1':'Singgih',                                         // Singgih cover Slamet D1
+            'D3':'Aditya'                                           // Aditya cover Singgih D3
+          }; // Slamet OFF
+          
+          if (day === 5) return { ...BASE_SCHEMA, 
+            'B5':'Lutfi',                                           // Lutfi ambil B5
+            'C1':'Rocky', 'C2':'Rocky', 'C3':'Rocky',               // Rocky ambil C3
+            'D1':'Slamet', 'D2':'Slamet',                           // Slamet cover Singgih D2
+            'D3':'Aditya',                                          // Aditya cover Singgih D3
+            'D5':'Syarif Hidayatulloh', 'G1':'Syarif Hidayatulloh'  // Syarif cover Aditya D5, G1
+          }; // Singgih OFF
+          
+          if (day === 6) return { ...BASE_SCHEMA, 
+            'B5':'Lutfi',                                           // Lutfi cover Rocky B5
+            'C1':'Slamet', 'C2':'Slamet',                           // Slamet cover Rocky C1, C2
+            'D1':'Singgih',                                         // Singgih cover Slamet D1
+            'D3':'Aditya'                                           // Aditya cover Singgih D3
+          }; // Rocky OFF
+          
+          if (day === 0) return { ...BASE_SCHEMA,
+            'F3':'Aditya', 'F4':'Aditya',                           // Aditya cover Aminullah F3, F4
+            'F1':'Alul',                                            // Alul cover Aditya F1
+            'D4':'Singgih',                                         // Singgih cover Aditya D4
+            'D5':'Syarif Hidayatulloh', 'G1':'Syarif Hidayatulloh'  // Syarif cover Aditya shift
+          }; // Aminullah OFF
+          
+          return BASE_SCHEMA;
+        };
+
+        // --- KOMPONEN UTAMA ---
         function App() {
+          const [activeMenu, setActiveMenu] = useState('generator');
+          
           const [selectedDate, setSelectedDate] = useState(() => {
             const d = new Date();
             d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
             return d.toISOString().split('T')[0];
           });
 
+          const [autoMode, setAutoMode] = useState(false);
           const [courierStatuses, setCourierStatuses] = useState({});
           const [activeTrip, setActiveTrip] = useState('Pagi');
-          
-          // Menggunakan state default untuk assignment pagi
-          const [allAssignments, setAllAssignments] = useState({
-            Pagi: { ...DEFAULT_PAGI_ASSIGNMENTS }, 
-            Siang: {}, 
-            Sore: {}
-          });
-          
+          const [allAssignments, setAllAssignments] = useState({ Pagi: { ...BASE_SCHEMA }, Siang: {}, Sore: {} });
           const [expandedCourier, setExpandedCourier] = useState(null);
           const [customNote, setCustomNote] = useState('');
           const [waText, setWaText] = useState('');
           const [copied, setCopied] = useState(false);
           const textRef = useRef(null);
 
-          const assignments = allAssignments[activeTrip];
+          const assignments = allAssignments[activeTrip] || {};
+
+          useEffect(() => {
+            if (!autoMode) {
+              setCourierStatuses({});
+              setAllAssignments({ Pagi: { ...BASE_SCHEMA }, Siang: {}, Sore: {} });
+              return;
+            }
+
+            const dateObj = new Date(selectedDate);
+            const dayOfWeek = dateObj.getDay(); 
+
+            const offList = WEEKLY_OFF[dayOfWeek] || [];
+            const newStatuses = {};
+            offList.forEach(name => newStatuses[name] = 'LIBUR');
+            setCourierStatuses(newStatuses);
+
+            setAllAssignments({ Pagi: getDailySchema(dayOfWeek), Siang: {}, Sore: {} });
+          }, [selectedDate, autoMode]);
+
+          useEffect(() => {
+            if (activeMenu === 'generator') generateWaText();
+          }, [allAssignments, customNote, selectedDate, courierStatuses, activeMenu]);
 
           const handleStatusChange = (courierName, status) => {
             if (status !== 'HADIR') {
@@ -134,23 +201,17 @@
                 ['Pagi', 'Siang', 'Sore'].forEach(trip => {
                   newAll[trip] = { ...newAll[trip] };
                   Object.keys(newAll[trip]).forEach(subId => {
-                    if (newAll[trip][subId] === courierName) {
-                      delete newAll[trip][subId];
-                    }
+                    if (newAll[trip][subId] === courierName) delete newAll[trip][subId];
                   });
                 });
                 return newAll;
               });
               if (expandedCourier === courierName) setExpandedCourier(null);
             }
-
             setCourierStatuses(prev => {
               const next = { ...prev };
-              if (status === 'HADIR') {
-                delete next[courierName];
-              } else {
-                next[courierName] = status;
-              }
+              if (status === 'HADIR') delete next[courierName];
+              else next[courierName] = status;
               return next;
             });
           };
@@ -158,60 +219,38 @@
           const handleToggleSubArea = (subId, courierName) => {
             setAllAssignments(prevAll => {
               const currentTripAssign = { ...prevAll[activeTrip] };
-              if (currentTripAssign[subId] === courierName) {
-                delete currentTripAssign[subId];
-              } else {
-                currentTripAssign[subId] = courierName;
-              }
+              if (currentTripAssign[subId] === courierName) delete currentTripAssign[subId];
+              else currentTripAssign[subId] = courierName;
               return { ...prevAll, [activeTrip]: currentTripAssign };
             });
           };
 
           const handleToggleVillage = (village, courierName) => {
             const isAllMine = village.subs.every(sub => assignments[sub.id] === courierName);
-            
             setAllAssignments(prevAll => {
               const currentTripAssign = { ...prevAll[activeTrip] };
               village.subs.forEach(sub => {
                 if (isAllMine) {
                   if (currentTripAssign[sub.id] === courierName) delete currentTripAssign[sub.id];
-                } else {
-                  currentTripAssign[sub.id] = courierName;
-                }
+                } else currentTripAssign[sub.id] = courierName;
               });
               return { ...prevAll, [activeTrip]: currentTripAssign };
             });
           };
 
           const resetSchema = () => {
-            if(window.confirm(`Yakin ingin mereset/mengosongkan skema untuk ${TRIP_OPTIONS.find(t => t.id === activeTrip)?.label}?`)) {
+            if(window.confirm(`Yakin mereset skema ${TRIP_OPTIONS.find(t => t.id === activeTrip)?.label}?`)) {
               setAllAssignments(prev => ({ ...prev, [activeTrip]: {} }));
               setExpandedCourier(null);
             }
           };
 
-          useEffect(() => {
-            generateWaText();
-          }, [allAssignments, customNote, selectedDate, courierStatuses]);
-
           const getTripText = (assignmentsObj, tripType) => {
             let text = '';
-            const courierTasks = {};
-            DATA_COURIERS.forEach(c => courierTasks[c.name] = { type: c.type, areas: [] });
-
+            
             let hasAnyTask = false;
-            Object.entries(assignmentsObj).forEach(([subId, courierName]) => {
-              if (courierStatuses[courierName]) return; 
-
-              let fullName = '';
-              DATA_AREAS.forEach(area => {
-                const sub = area.subs.find(s => s.id === subId);
-                if (sub) fullName = `${area.name} - ${sub.name}`;
-              });
-              if (courierTasks[courierName]) {
-                courierTasks[courierName].areas.push(`${subId} (${fullName})`);
-                hasAnyTask = true;
-              }
+            Object.keys(assignmentsObj).forEach(subId => {
+              if (!courierStatuses[assignmentsObj[subId]]) hasAnyTask = true;
             });
 
             if (!hasAnyTask && tripType !== 'Pagi') return '';
@@ -220,12 +259,31 @@
             types.forEach(type => {
               let typeHasTask = false;
               let typeStr = `*👨‍✈️ TIM ${type.toUpperCase()}:*\n`;
+
               DATA_COURIERS.filter(c => c.type === type).forEach(c => {
-                if (courierStatuses[c.name]) return; 
+                if (courierStatuses[c.name]) return;
                 
-                if (courierTasks[c.name].areas.length > 0) {
-                  const sortedAreas = courierTasks[c.name].areas.sort();
-                  typeStr += `▪️ *${c.name}* : ${sortedAreas.join(', ')}\n`;
+                const myAreas = [];
+                Object.entries(assignmentsObj).forEach(([subId, courierName]) => {
+                  if (courierName === c.name) {
+                    const baseOwner = BASE_SCHEMA[subId];
+                    const isCover = baseOwner !== courierName && courierStatuses[baseOwner];
+                    
+                    const area = DATA_AREAS.find(a => a.subs.some(s => s.id === subId));
+                    const sub = area.subs.find(s => s.id === subId);
+                    
+                    let label = isCover ? ` -> *Cover ${baseOwner}*` : '';
+                    
+                    // Format Output Baru: Gunakan koma khusus Karangsari
+                    const separator = area.id === 'D' ? ', ' : ' - ';
+                    myAreas.push(`${subId} (${area.name}${separator}${sub.name})${label}`);
+                  }
+                });
+
+                if (myAreas.length > 0) {
+                  myAreas.sort();
+                  // Rapi dengan Enter dan dipisahkan koma per baris
+                  typeStr += `▪️ *${c.name}* :\n${myAreas.join(',\n')}\n`;
                   typeHasTask = true;
                 }
               });
@@ -233,27 +291,30 @@
               if (tripType === 'Pagi') {
                 text += typeStr;
                 if (!typeHasTask) text += `(Belum ada penugasan)\n`;
-                text += `\n`;
-              } else {
-                if (typeHasTask) {
-                  text += typeStr + `\n`;
-                }
+                text += `\n`; // Jarak antar TIM
+              } else if (typeHasTask) {
+                text += typeStr + '\n';
               }
             });
 
             if (tripType === 'Pagi') {
-              text += `*Area Belum Tercover:* `;
               const unassigned = [];
               DATA_AREAS.forEach(area => {
                 area.subs.forEach(sub => {
                   const assignee = assignmentsObj[sub.id];
                   const isCovered = assignee && !courierStatuses[assignee];
                   if (!isCovered) {
-                     unassigned.push(`${sub.id} (${area.name} - ${sub.name})`);
+                    const separator = area.id === 'D' ? ', ' : ' - ';
+                    unassigned.push(`${sub.id} (${area.name}${separator}${sub.name})`);
                   }
                 });
               });
-              text += unassigned.length > 0 ? unassigned.join(', ') : 'NIHIL';
+              
+              if (unassigned.length > 0) {
+                  text += `*⚠️ Area Belum Tercover:*\n${unassigned.join('\n')}\n`;
+              } else {
+                  text += `*Area Belum Tercover:* NIHIL\n`;
+              }
             }
 
             return text.trim();
@@ -265,282 +326,374 @@
             const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
             let finalWa = `📦 *SKEMA SPX PULOSARI*\n📅 ${formattedDate}\n\n`;
-
             finalWa += getTripText(allAssignments.Pagi, 'Pagi');
-
+            
             const textSiang = getTripText(allAssignments.Siang, 'Siang');
-            if (textSiang) finalWa += `\n\n*☀️ TRIP SIANG (12:00)*\n${textSiang}`;
-
+            if (textSiang) finalWa += `\n\n*☀️ TRIP SIANG (12:00)*\n\n${textSiang}`;
+            
             const textSore = getTripText(allAssignments.Sore, 'Sore');
-            if (textSore) finalWa += `\n\n*🌥️ TRIP SORE (14:00)*\n${textSore}`;
+            if (textSore) finalWa += `\n\n*🌥️ TRIP SORE (14:00)*\n\n${textSore}`;
 
-            // Mendeteksi Kurir Standby / Belum Ditugaskan sama sekali
             const couriersWithTasks = new Set();
             ['Pagi', 'Siang', 'Sore'].forEach(trip => {
-                Object.values(allAssignments[trip]).forEach(courier => {
-                    couriersWithTasks.add(courier);
-                });
+              Object.values(allAssignments[trip]).forEach(courier => couriersWithTasks.add(courier));
             });
 
-            const unassignedCouriers = DATA_COURIERS
-                .map(c => c.name)
-                .filter(name => !couriersWithTasks.has(name) && !courierStatuses[name]);
-
+            const unassignedCouriers = DATA_COURIERS.map(c => c.name).filter(name => !couriersWithTasks.has(name) && !courierStatuses[name]);
             if (unassignedCouriers.length > 0) {
               finalWa += `\n\n*🧍 KURIR STANDBY (BELUM ADA TUGAS):*\n`;
-              unassignedCouriers.forEach(name => {
-                  finalWa += `▪️ ${name}\n`;
-              });
+              unassignedCouriers.forEach(name => finalWa += `▪️ ${name}\n`);
               finalWa = finalWa.trimEnd();
             }
 
-            // Kurir yang Libur/Absen
             const absentNames = Object.keys(courierStatuses);
             if (absentNames.length > 0) {
               finalWa += `\n\n*🌴 INFO KURIR ABSEN:*\n`;
-              absentNames.forEach(name => {
-                 finalWa += `▪️ ${name} : ${courierStatuses[name]}\n`;
-              });
+              absentNames.forEach(name => finalWa += `▪️ ${name} : ${courierStatuses[name]}\n`);
               finalWa = finalWa.trimEnd();
             }
 
-            if (customNote.trim()) {
-              finalWa += `\n\n*📌 NOTE:*\n${customNote.trim()}`;
-            }
-
+            if (customNote.trim()) finalWa += `\n\n*📌 NOTE:*\n${customNote.trim()}`;
             finalWa += `\n\n_Semangat pejuang paket! Utamakan keselamatan & SLA._ 🚀`;
-
             setWaText(finalWa);
           };
 
           const copyToClipboard = () => {
-            if (navigator.clipboard && window.isSecureContext) {
-              navigator.clipboard.writeText(waText).then(() => {
-                setCopied(true); setTimeout(() => setCopied(false), 2000);
-              });
-            } else {
-              if (textRef.current) {
-                textRef.current.select();
-                document.execCommand('copy');
-                setCopied(true); setTimeout(() => setCopied(false), 2000);
-              }
-            }
+            const textArea = document.createElement("textarea");
+            textArea.value = waText;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand('copy');
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch (err) {}
+            document.body.removeChild(textArea);
           };
 
           return (
             <div className="min-h-screen bg-gray-50 font-sans pb-20">
-              <header className="bg-[#EE4D2D] text-white p-4 shadow-md sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                  <div>
-                    <h1 className="text-xl font-bold tracking-wider flex items-center gap-2">
+              <header className="bg-[#EE4D2D] text-white shadow-md sticky top-0 z-20">
+                <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+                  <div className="w-full sm:w-auto text-center sm:text-left">
+                    <h1 className="text-xl font-bold tracking-wider flex items-center justify-center sm:justify-start gap-2">
                       <CheckSquare size={20} /> SPX PULOSARI
                     </h1>
-                    <p className="text-xs opacity-90 mt-0.5">Generator Skema Area</p>
+                    <p className="text-xs opacity-90 mt-0.5">Sistem Pintar Penjadwalan Kurir</p>
                   </div>
-                  <button 
-                    onClick={resetSchema}
-                    className="flex items-center gap-1.5 text-xs bg-white text-[#EE4D2D] px-3 py-1.5 rounded-full font-bold hover:bg-gray-100 transition shadow-sm"
-                  >
-                    <RefreshCw size={14} /> Reset {activeTrip}
-                  </button>
+                  <div className="flex bg-white/10 p-1 rounded-lg w-full sm:w-auto overflow-x-auto custom-scrollbar">
+                    <button onClick={() => setActiveMenu('generator')} className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap ${activeMenu === 'generator' ? 'bg-white text-[#EE4D2D]' : 'text-white hover:bg-white/20'}`}>
+                      <Settings size={14} /> Generator
+                    </button>
+                    <button onClick={() => setActiveMenu('daily')} className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap ${activeMenu === 'daily' ? 'bg-white text-[#EE4D2D]' : 'text-white hover:bg-white/20'}`}>
+                      <FileText size={14} /> Skema Daily
+                    </button>
+                    <button onClick={() => setActiveMenu('calendar')} className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap ${activeMenu === 'calendar' ? 'bg-white text-[#EE4D2D]' : 'text-white hover:bg-white/20'}`}>
+                      <CalendarDays size={14} /> Kalender Libur
+                    </button>
+                  </div>
                 </div>
               </header>
 
-              <main className="max-w-4xl mx-auto p-4 mt-2">
-                
-                <div className="flex flex-col md:flex-row gap-4 mb-4">
-                  <div className="bg-white p-2 md:p-1.5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2 px-4 w-full md:w-auto shrink-0">
-                     <Calendar size={18} className="text-[#EE4D2D]" />
-                     <input 
-                        type="date" 
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="font-bold text-gray-700 outline-none w-full bg-transparent text-sm cursor-pointer"
-                     />
-                  </div>
+              {activeMenu === 'generator' && (
+                <main className="max-w-5xl mx-auto p-4 mt-2 animate-in fade-in duration-300">
+                  <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
+                    <div className="bg-white p-2 md:p-1.5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2 px-4 w-full md:w-auto shrink-0">
+                      <Calendar size={18} className="text-[#EE4D2D]" />
+                      <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="font-bold text-gray-700 outline-none w-full bg-transparent text-sm cursor-pointer"/>
+                    </div>
 
-                  <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 flex gap-1 overflow-x-auto flex-1 custom-scrollbar">
-                    {TRIP_OPTIONS.map(trip => {
-                      const hasData = Object.keys(allAssignments[trip.id]).length > 0;
-                      const isActive = activeTrip === trip.id;
-                      return (
-                        <button
-                          key={trip.id}
-                          onClick={() => setActiveTrip(trip.id)}
-                          className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all relative whitespace-nowrap
-                            ${isActive ? 'bg-[#EE4D2D] text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >
-                          <Clock size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
-                          {trip.label}
-                          {hasData && !isActive && (
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full shadow-sm"></span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                    <label className="flex items-center cursor-pointer bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm w-full md:w-auto hover:bg-gray-50 transition-colors">
+                      <div className="relative">
+                        <input type="checkbox" className="sr-only" checked={autoMode} onChange={() => setAutoMode(!autoMode)} />
+                        <div className={`block w-10 h-6 rounded-full transition-colors ${autoMode ? 'bg-[#EE4D2D]' : 'bg-gray-300'}`}></div>
+                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${autoMode ? 'transform translate-x-4' : ''}`}></div>
+                      </div>
+                      <div className="ml-3 text-xs font-bold text-gray-700 flex flex-col">
+                        <span>Sistem Otomatis</span>
+                        <span className="text-[10px] text-gray-400 font-normal leading-tight">Deteksi Cover & Pergeseran</span>
+                      </div>
+                    </label>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  
-                  <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 h-fit">
-                    <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">1. Pilih Kurir & Centang Area</h2>
-                    
-                    <div className="space-y-3">
-                      {DATA_COURIERS.map((courier, index) => {
-                        const isExpanded = expandedCourier === courier.name;
-                        const courierStatus = courierStatuses[courier.name];
-                        const isAbsent = !!courierStatus;
-                        const myAreasCount = Object.values(assignments).filter(name => name === courier.name).length;
-                        
+                    <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 flex gap-1 overflow-x-auto w-full flex-1 custom-scrollbar">
+                      {TRIP_OPTIONS.map(trip => {
+                        const hasData = Object.keys(allAssignments[trip.id]).length > 0;
+                        const isActive = activeTrip === trip.id;
                         return (
-                          <div key={index} className={`bg-white rounded-lg border overflow-hidden shadow-sm transition-all 
-                            ${isAbsent ? 'border-red-200 opacity-80' : 'border-gray-200'}`}>
-                            
-                            <div 
-                              className={`p-3 md:p-4 flex justify-between items-center cursor-pointer select-none transition-colors
-                                ${isExpanded ? 'bg-[#EE4D2D]/10' : (isAbsent ? 'bg-red-50/30' : 'hover:bg-gray-50')}`}
-                              onClick={() => setExpandedCourier(isExpanded ? null : courier.name)}
-                            >
-                              <div className="flex flex-col">
-                                <span className="font-bold text-gray-800 text-sm md:text-base">{courier.name}</span>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[10px] md:text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
-                                    {courier.type}
-                                  </span>
-                                  {!isAbsent && myAreasCount > 0 && (
-                                    <span className="text-[10px] md:text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">
-                                      {myAreasCount} Area Terpilih
-                                    </span>
+                          <button key={trip.id} onClick={() => setActiveTrip(trip.id)} className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all relative whitespace-nowrap ${isActive ? 'bg-[#EE4D2D] text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}>
+                            <Clock size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
+                            {trip.label}
+                            {hasData && !isActive && <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full shadow-sm"></span>}
+                          </button>
+                        )
+                      })}
+                      <button onClick={resetSchema} className="shrink-0 flex items-center gap-1 text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-100 transition border border-red-100">
+                        <RefreshCw size={14} /> Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 h-fit">
+                      <div className="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 className="text-lg font-bold text-gray-800">1. Pilih Kurir & Centang Area</h2>
+                        {autoMode && <span className="text-[10px] bg-[#EE4D2D]/10 text-[#EE4D2D] px-2 py-1 rounded font-bold border border-[#EE4D2D]/20 animate-pulse">⚡ Mode Otomatis Aktif</span>}
+                      </div>
+                      <div className="space-y-3">
+                        {DATA_COURIERS.map((courier, index) => {
+                          const isExpanded = expandedCourier === courier.name;
+                          const courierStatus = courierStatuses[courier.name];
+                          const isAbsent = !!courierStatus;
+                          const myAreasCount = Object.values(assignments).filter(name => name === courier.name).length;
+                          
+                          return (
+                            <div key={index} className={`bg-white rounded-lg border overflow-hidden shadow-sm transition-all ${isAbsent ? 'border-red-200 opacity-80' : 'border-gray-200'}`}>
+                              <div className={`p-3 md:p-4 flex justify-between items-center cursor-pointer select-none transition-colors ${isExpanded ? 'bg-[#EE4D2D]/10' : (isAbsent ? 'bg-red-50/30' : 'hover:bg-gray-50')}`} onClick={() => setExpandedCourier(isExpanded ? null : courier.name)}>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-gray-800 text-sm md:text-base">{courier.name}</span>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] md:text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">{courier.type}</span>
+                                    {!isAbsent && myAreasCount > 0 && <span className="text-[10px] md:text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">{myAreasCount} Area Terpilih</span>}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <select value={courierStatus || 'HADIR'} onChange={(e) => handleStatusChange(courier.name, e.target.value)} onClick={(e) => e.stopPropagation()} className={`text-[10px] md:text-xs font-bold rounded px-1.5 py-1 outline-none border cursor-pointer ${isAbsent ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                    <option value="HADIR">HADIR</option>
+                                    <option value="OFF">OFF</option>
+                                    <option value="LIBUR">LIBUR</option>
+                                    <option value="CUTI">CUTI</option>
+                                  </select>
+                                  <div className="text-gray-400">{isExpanded ? <ChevronUp size={20} className="text-[#EE4D2D]" /> : <ChevronDown size={20} />}</div>
+                                </div>
+                              </div>
+
+                              {isExpanded && (
+                                <div className="p-3 md:p-4 bg-gray-50 border-t border-gray-100 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                  {isAbsent ? (
+                                    <div className="text-center py-5">
+                                      <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold mb-2">STATUS: {courierStatus}</span>
+                                      <p className="text-sm text-gray-500">Ubah status menjadi <b>HADIR</b> terlebih dahulu.</p>
+                                    </div>
+                                  ) : (
+                                    DATA_AREAS.map(village => {
+                                      const isAllMine = village.subs.every(sub => assignments[sub.id] === courier.name);
+                                      const isSomeMine = !isAllMine && village.subs.some(sub => assignments[sub.id] === courier.name);
+                                      return (
+                                        <div key={village.id} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                          <label className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-100 cursor-pointer select-none">
+                                            <input type="checkbox" className="w-4 h-4 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer" checked={isAllMine} ref={input => { if (input) input.indeterminate = isSomeMine }} onChange={() => handleToggleVillage(village, courier.name)} />
+                                            <span className="font-bold text-[#EE4D2D] text-sm md:text-base">{village.name} <span className="text-gray-400 text-xs font-normal ml-1">(Pilih Semua)</span></span>
+                                          </label>
+                                          <div className="space-y-2 pl-7">
+                                            {village.subs.map(sub => {
+                                              const isMine = assignments[sub.id] === courier.name;
+                                              const currentAssignee = assignments[sub.id];
+                                              const isOther = currentAssignee && currentAssignee !== courier.name;
+                                              
+                                              const baseOwner = BASE_SCHEMA[sub.id];
+                                              const isCover = isMine && baseOwner !== courier.name && courierStatuses[baseOwner];
+
+                                              return (
+                                                <label key={sub.id} className="flex items-start md:items-center space-x-3 cursor-pointer select-none group">
+                                                  <input type="checkbox" className="w-4 h-4 mt-0.5 md:mt-0 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer" checked={isMine} onChange={() => handleToggleSubArea(sub.id, courier.name)} />
+                                                  <div className="flex flex-col md:flex-row md:items-center text-sm w-full">
+                                                    <span className="text-gray-700 group-hover:text-black"><span className="font-bold bg-gray-100 px-1.5 py-0.5 rounded text-xs mr-1.5 border border-gray-200">{sub.id}</span> {sub.name}</span>
+                                                    {isOther && <span className="md:ml-2 mt-1 md:mt-0 text-[10px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 w-fit">Diambil: {currentAssignee}</span>}
+                                                    {isCover && <span className="md:ml-auto mt-1 md:mt-0 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 w-fit">Cover {baseOwner}</span>}
+                                                  </div>
+                                                </label>
+                                              )
+                                            })}
+                                          </div>
+                                        </div>
+                                      )
+                                    })
                                   )}
                                 </div>
-                              </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
 
-                              <div className="flex items-center gap-3">
-                                <select 
-                                  value={courierStatus || 'HADIR'}
-                                  onChange={(e) => handleStatusChange(courier.name, e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className={`text-[10px] md:text-xs font-bold rounded px-1.5 py-1 outline-none border cursor-pointer
-                                    ${isAbsent ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}
-                                >
-                                  <option value="HADIR">HADIR</option>
-                                  <option value="OFF">OFF</option>
-                                  <option value="LIBUR">LIBUR</option>
-                                  <option value="CUTI">CUTI</option>
-                                </select>
-                                <div className="text-gray-400">
-                                  {isExpanded ? <ChevronUp size={20} className="text-[#EE4D2D]" /> : <ChevronDown size={20} />}
-                                </div>
+                    <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[80vh] sticky top-[120px]">
+                      <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+                        <MessageCircle size={20} className="text-green-500" /> 2. Hasil Skema (Copy WA)
+                      </h2>
+                      <div className="mb-3">
+                        <label className="text-xs font-bold text-gray-700 mb-1 block">Catatan Tambahan (Opsional):</label>
+                        <textarea className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none custom-scrollbar" rows="2" placeholder="Ketik catatan di sini..." value={customNote} onChange={(e) => setCustomNote(e.target.value)}></textarea>
+                      </div>
+                      <textarea ref={textRef} className="flex-1 w-full border border-gray-200 rounded-lg p-3 md:p-4 text-xs font-mono bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-400 whitespace-pre-wrap custom-scrollbar" readOnly value={waText} />
+                      <button onClick={copyToClipboard} className={`mt-4 w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-sm ${copied ? 'bg-green-500 text-white transform scale-[0.98]' : 'bg-[#EE4D2D] text-white hover:bg-[#d64325]'}`}>
+                        <ClipboardCopy size={20} /> {copied ? 'Berhasil Disalin!' : 'Copy Untuk WhatsApp'}
+                      </button>
+                    </div>
+                  </div>
+                </main>
+              )}
+
+              {activeMenu === 'daily' && (
+                <main className="max-w-5xl mx-auto p-4 mt-2 animate-in fade-in duration-300">
+                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="mb-6 border-b pb-4">
+                      <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <FileText className="text-[#EE4D2D]" size={24}/> Format Pembagian Kerja (Day-by-Day)
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-2">Sesuai algoritma pergeseran area. Indikator <span className="bg-orange-100 text-orange-600 px-1 py-0.5 rounded text-xs font-bold">Cover</span> HANYA muncul jika pemilik aslinya sedang libur.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {[1, 2, 3, 4, 5, 6, 0].map(dayNum => {
+                        const daySchema = getDailySchema(dayNum);
+                        const offCouriers = WEEKLY_OFF[dayNum] || [];
+                        
+                        const courierMap = {};
+                        DATA_COURIERS.forEach(c => courierMap[c.name] = { base: [], cover: {} });
+                        
+                        Object.entries(daySchema).forEach(([subId, courierName]) => {
+                          if(!offCouriers.includes(courierName)) {
+                            const baseOwner = BASE_SCHEMA[subId];
+                            const isCover = baseOwner !== courierName && offCouriers.includes(baseOwner);
+
+                            if (!isCover) {
+                                courierMap[courierName].base.push(subId);
+                            } else {
+                                if (!courierMap[courierName].cover[baseOwner]) courierMap[courierName].cover[baseOwner] = [];
+                                courierMap[courierName].cover[baseOwner].push(subId);
+                            }
+                          }
+                        });
+
+                        return (
+                          <div key={dayNum} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-gray-50 px-4 py-3 border-b flex flex-col md:flex-row justify-between md:items-center gap-2">
+                              <h3 className="font-bold text-lg text-[#EE4D2D] uppercase">{DAYS_NAME[dayNum]}</h3>
+                              <div className="text-xs font-bold bg-red-100 text-red-600 px-3 py-1 rounded-full w-fit">
+                                LIBUR (OFF): {offCouriers.length > 0 ? offCouriers.join(' & ') : 'TIDAK ADA'}
                               </div>
                             </div>
-
-                            {isExpanded && (
-                              <div className="p-3 md:p-4 bg-gray-50 border-t border-gray-100 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                {isAbsent ? (
-                                  <div className="text-center py-5">
-                                    <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold mb-2">
-                                      STATUS: {courierStatus}
-                                    </span>
-                                    <p className="text-sm text-gray-500">
-                                      Ubah status menjadi <b>HADIR</b> terlebih dahulu untuk dapat memberikan penugasan area kepada kurir ini.
-                                    </p>
-                                  </div>
-                                ) : (
-                                  DATA_AREAS.map(village => {
-                                    const isAllMine = village.subs.every(sub => assignments[sub.id] === courier.name);
-                                    const isSomeMine = !isAllMine && village.subs.some(sub => assignments[sub.id] === courier.name);
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm text-left">
+                                <thead className="bg-gray-100/50 text-gray-600 text-xs">
+                                  <tr>
+                                    <th className="px-4 py-2 w-1/4 border-b">Kurir Masuk</th>
+                                    <th className="px-4 py-2 border-b">Rincian Area & Tugas Cover</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                  {DATA_COURIERS.filter(c => !offCouriers.includes(c.name)).map(courier => {
+                                    const data = courierMap[courier.name];
+                                    const isStandby = data.base.length === 0 && Object.keys(data.cover).length === 0;
+                                    
+                                    if (isStandby) return (
+                                       <tr key={courier.name} className="hover:bg-gray-50">
+                                         <td className="px-4 py-3 font-bold text-gray-800">{courier.name}</td>
+                                         <td className="px-4 py-3 text-gray-400 italic">Standby Murni / Membantu Area Overload</td>
+                                       </tr>
+                                    );
 
                                     return (
-                                      <div key={village.id} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                                        <label className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-100 cursor-pointer select-none">
-                                          <input 
-                                            type="checkbox" 
-                                            className="w-4 h-4 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
-                                            checked={isAllMine}
-                                            ref={input => { if (input) input.indeterminate = isSomeMine }}
-                                            onChange={() => handleToggleVillage(village, courier.name)}
-                                          />
-                                          <span className="font-bold text-[#EE4D2D] text-sm md:text-base">
-                                            {village.id} - {village.name} <span className="text-gray-400 text-xs font-normal ml-1">(Pilih Semua)</span>
-                                          </span>
-                                        </label>
-
-                                        <div className="space-y-2 pl-7">
-                                          {village.subs.map(sub => {
-                                            const isMine = assignments[sub.id] === courier.name;
-                                            const currentAssignee = assignments[sub.id];
-                                            const isOther = currentAssignee && currentAssignee !== courier.name;
-
-                                            return (
-                                              <label key={sub.id} className="flex items-start md:items-center space-x-3 cursor-pointer select-none group">
-                                                <input 
-                                                  type="checkbox" 
-                                                  className="w-4 h-4 mt-0.5 md:mt-0 text-[#EE4D2D] bg-gray-100 border-gray-300 rounded focus:ring-[#EE4D2D] cursor-pointer"
-                                                  checked={isMine}
-                                                  onChange={() => handleToggleSubArea(sub.id, courier.name)}
-                                                />
-                                                <div className="flex flex-col md:flex-row md:items-center text-sm">
-                                                  <span className="text-gray-700 group-hover:text-black">
-                                                    <span className="font-bold bg-gray-100 px-1.5 py-0.5 rounded text-xs mr-1.5 border border-gray-200">{sub.id}</span> 
-                                                    {sub.name}
+                                      <tr key={courier.name} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3 font-bold text-gray-800">{courier.name}</td>
+                                        <td className="px-4 py-3 space-y-2">
+                                          {data.base.length > 0 && (
+                                              <div>
+                                                  <span className="font-medium text-gray-800">{data.base.sort().join(', ')}</span>
+                                              </div>
+                                          )}
+                                          {Object.entries(data.cover).map(([owner, subs], idx) => (
+                                              <div key={idx} className="flex items-center gap-2 mt-1">
+                                                  <span className="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded uppercase border border-orange-200">
+                                                      Cover {owner}
                                                   </span>
-                                                  {isOther && (
-                                                    <span className="md:ml-2 mt-1 md:mt-0 text-[10px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 w-fit">
-                                                      Diambil: {currentAssignee}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              </label>
-                                            )
-                                          })}
-                                        </div>
-                                      </div>
+                                                  <span className="font-bold text-gray-700">{subs.sort().join(', ')}</span>
+                                              </div>
+                                          ))}
+                                        </td>
+                                      </tr>
                                     )
-                                  })
-                                )}
-                              </div>
-                            )}
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )
                       })}
                     </div>
                   </div>
+                </main>
+              )}
 
-                  <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[80vh] sticky top-20">
-                    <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
-                      <MessageCircle size={20} className="text-green-500" /> 2. Hasil Skema (Copy WA)
-                    </h2>
-
-                    <div className="mb-3">
-                      <label className="text-xs font-bold text-gray-700 mb-1 block">Catatan Tambahan (Opsional):</label>
-                      <textarea 
-                        className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-[#EE4D2D] focus:border-[#EE4D2D] outline-none custom-scrollbar"
-                        rows="2"
-                        placeholder="Ketik catatan, info libur, atau instruksi khusus di sini..."
-                        value={customNote}
-                        onChange={(e) => setCustomNote(e.target.value)}
-                      ></textarea>
+              {activeMenu === 'calendar' && (
+                <main className="max-w-5xl mx-auto p-4 mt-2 animate-in fade-in duration-300">
+                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="mb-6 border-b pb-4">
+                      <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <CalendarDays className="text-[#EE4D2D]" size={24}/> Kalender Libur Kurir
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-2">Asumsi 1 April jatuh pada hari Rabu. Menampilkan jadwal dinas (✔️) dan Libur bulanan.</p>
                     </div>
 
-                    <textarea 
-                      ref={textRef}
-                      className="flex-1 w-full border border-gray-200 rounded-lg p-3 md:p-4 text-xs md:text-sm font-mono bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-400 whitespace-pre-wrap custom-scrollbar"
-                      readOnly
-                      value={waText}
-                    />
-                    <button 
-                      onClick={copyToClipboard}
-                      className={`mt-4 w-full py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-sm
-                        ${copied ? 'bg-green-500 text-white transform scale-[0.98]' : 'bg-[#EE4D2D] text-white hover:bg-[#d64325]'}`}
-                    >
-                      <ClipboardCopy size={20} />
-                      {copied ? 'Berhasil Disalin!' : 'Copy Untuk WhatsApp'}
-                    </button>
+                    <div className="space-y-8">
+                      {[
+                        { title: 'Periode: 1 - 15', start: 1, end: 15 },
+                        { title: 'Periode: 16 - 30', start: 16, end: 30 }
+                      ].map(period => {
+                        const getDayIdx = (tgl) => (tgl + 2) % 7;
+                        return (
+                          <div key={period.title} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-gray-50 px-4 py-3 border-b">
+                              <h3 className="font-bold text-gray-700">{period.title}</h3>
+                            </div>
+                            <div className="overflow-x-auto custom-scrollbar pb-2">
+                              <table className="w-full text-xs md:text-sm text-center border-collapse min-w-[600px]">
+                                <thead className="bg-gray-100 text-gray-600">
+                                  <tr>
+                                    <th className="px-3 py-2 border text-left sticky left-0 bg-gray-100 z-10 w-24">Kurir</th>
+                                    {Array.from({length: period.end - period.start + 1}, (_, i) => {
+                                      const tgl = period.start + i;
+                                      const dIdx = getDayIdx(tgl);
+                                      const isWeekend = dIdx === 6 || dIdx === 0;
+                                      return (
+                                        <th key={tgl} className={`px-1.5 py-2 border min-w-[30px] ${isWeekend ? 'bg-red-50 text-red-600' : ''}`}>
+                                          {tgl}<br/><span className="text-[10px] font-normal">{DAYS_NAME[dIdx].substring(0,3)}</span>
+                                        </th>
+                                      )
+                                    })}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {DATA_COURIERS.map(courier => (
+                                    <tr key={courier.name} className="hover:bg-gray-50">
+                                      <td className="px-3 py-2 border text-left font-bold text-gray-800 sticky left-0 bg-white z-10">{courier.name}</td>
+                                      {Array.from({length: period.end - period.start + 1}, (_, i) => {
+                                        const tgl = period.start + i;
+                                        const dIdx = getDayIdx(tgl);
+                                        const isOff = WEEKLY_OFF[dIdx]?.includes(courier.name);
+                                        
+                                        return (
+                                          <td key={tgl} className={`px-1 border ${isOff ? 'bg-red-500 text-white font-bold text-[10px]' : 'text-green-500'}`}>
+                                            {isOff ? 'OFF' : '✔️'}
+                                          </td>
+                                        )
+                                      })}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
+                </main>
+              )}
 
-                </div>
-              </main>
             </div>
           );
         }
